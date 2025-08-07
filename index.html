@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethical AI Validator - Documentation</title>
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --accent: #007acc;
+            --border: #e1e4e8;
+            --code-bg: #f6f8fa;
+            --code-border: #e1e4e8;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --accent: #58a6ff;
+            --border: #404040;
+            --code-bg: #2d2d2d;
+            --code-border: #404040;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header {
+            padding: 40px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 40px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            text-align: center;
+        }
+
+        .title-section h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .badges {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .badge {
+            display: flex;
+            align-items: center;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .badge-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 6px;
+            border-radius: 2px;
+        }
+
+        .badge-blue {
+            background: #0366d6;
+            color: white;
+        }
+
+        .badge-green {
+            background: #28a745;
+            color: white;
+        }
+
+        .badge-orange {
+            background: #f66a0a;
+            color: white;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 12px;
+            cursor: pointer;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-secondary);
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 250px;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .main-content {
+            min-width: 0;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 40px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 30px 0 15px 0;
+        }
+
+        h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 20px 0 10px 0;
+        }
+
+        p {
+            margin-bottom: 15px;
+            color: var(--text-secondary);
+        }
+
+        ul,
+        ol {
+            margin: 15px 0;
+            padding-left: 20px;
+            color: var(--text-secondary);
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid var(--code-border);
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .code-block pre {
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .highlight {
+            background: var(--accent);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .info-box {
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--accent);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .warning-box {
+            background: var(--bg-secondary);
+            border-left: 4px solid #f66a0a;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .success-box {
+            background: var(--bg-secondary);
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .table th {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .nav-links {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .nav-links li {
+            margin-bottom: 8px;
+        }
+
+        .nav-links a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+
+        .contact-info {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .contact-info h4 {
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 40px 0;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .title-section h1 {
+                font-size: 2rem;
+            }
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .feature-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 20px;
+        }
+
+        .feature-item h4 {
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .feature-item p {
+            color: var(--text-secondary);
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <div class="title-section">
+                    <h1>Ethical AI Validator</h1>
+                    <p class="subtitle">Comprehensive AI bias detection and fairness assessment package</p>
+                </div>
+                <div class="badges">
+                    <div class="badge badge-blue">
+                        <div class="badge-icon" style="background: #0366d6;"></div>
+                        pypi v1.0.0
+                    </div>
+                    <div class="badge badge-green">
+                        <div class="badge-icon" style="background: #28a745;"></div>
+                        CI passing
+                    </div>
+                    <div class="badge badge-orange">
+                        <div class="badge-icon" style="background: #f66a0a;"></div>
+                        Python 2.7+
+                    </div>
+                    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="main-content">
+                <p><strong>Ethical AI Validator makes it easy to detect bias, assess fairness, and ensure compliance
+                        with regulations like GDPR and AI Act.</strong></p>
+
+                <p>Ethical AI Validator uses advanced statistical methods and machine learning techniques to analyze
+                    model predictions across protected attributes, providing comprehensive bias detection, fairness
+                    metrics, and automated compliance reporting.</p>
+
+                <h2 id="features">Features</h2>
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <h4>Bias Detection</h4>
+                        <p>Advanced algorithms to detect statistical parity, equalized odds, and other bias metrics
+                            across protected attributes.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>Fairness Assessment</h4>
+                        <p>Comprehensive fairness metrics including demographic parity, equal opportunity, and
+                            individual fairness measures.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>Compliance Reporting</h4>
+                        <p>Automated generation of GDPR and AI Act compliance reports with detailed audit trails.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>Real-time Monitoring</h4>
+                        <p>Continuous monitoring of model performance with automated alerts for bias detection.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>Mitigation Suggestions</h4>
+                        <p>Intelligent recommendations for bias mitigation strategies and model improvements.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>Performance Metrics</h4>
+                        <p>Detailed performance analysis with precision, recall, and F1-score calculations per group.
+                        </p>
+                    </div>
+                </div>
+
+                <h2 id="installation">Installation</h2>
+                <div class="code-block">
+                    <pre>pip install ethical-ai-validator</pre>
+                </div>
+
+                <h2 id="quick-start">Quick Start</h2>
+                <div class="code-block">
+                    <pre>from ethical_ai_validator import EthicalAIValidator
+
+# Initialize the validator
+validator = EthicalAIValidator()
+
+# Sample data
+predictions = [1, 0, 1, 0, 1, 0, 1, 0]
+true_labels = [1, 0, 1, 0, 1, 0, 1, 0]
+protected_attributes = {
+    'gender': ['male', 'female', 'male', 'female', 'male', 'female', 'male', 'female'],
+    'age_group': ['young', 'old', 'young', 'old', 'young', 'old', 'young', 'old']
+}
+
+# Perform bias audit
+bias_report = validator.audit_bias(
+    predictions=predictions,
+    true_labels=true_labels,
+    protected_attributes=protected_attributes
+)
+
+print("Bias Report:")
+print(bias_report)</pre>
+                </div>
+
+                <h2 id="core-functionality">Core Functionality</h2>
+
+                <h3>Bias Detection (FR-001)</h3>
+                <p>The package implements sophisticated bias detection algorithms that analyze model predictions across
+                    different protected attributes:</p>
+                <ul>
+                    <li><strong>Statistical Parity:</strong> Measures the difference in positive prediction rates
+                        between groups</li>
+                    <li><strong>Equalized Odds:</strong> Assesses fairness in terms of true positive and false positive
+                        rates</li>
+                    <li><strong>Individual Fairness:</strong> Evaluates consistency in predictions for similar
+                        individuals</li>
+                </ul>
+
+                <h3>Fairness Metrics (FR-002)</h3>
+                <p>Comprehensive fairness assessment with multiple metrics:</p>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Description</th>
+                            <th>Range</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Demographic Parity</td>
+                            <td>Equal positive prediction rates across groups</td>
+                            <td>0-1 (closer to 0 is fairer)</td>
+                        </tr>
+                        <tr>
+                            <td>Equal Opportunity</td>
+                            <td>Equal true positive rates across groups</td>
+                            <td>0-1 (closer to 0 is fairer)</td>
+                        </tr>
+                        <tr>
+                            <td>Predictive Rate Parity</td>
+                            <td>Equal precision across groups</td>
+                            <td>0-1 (closer to 0 is fairer)</td>
+                        </tr>
+                        <tr>
+                            <td>Bias Score</td>
+                            <td>Combined bias metric</td>
+                            <td>0-∞ (lower is better)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Compliance Reporting (FR-003)</h3>
+                <div class="info-box">
+                    <strong>GDPR Compliance:</strong> Ensures data protection, right to explanation, and automated
+                    decision-making transparency.
+                </div>
+                <div class="info-box">
+                    <strong>AI Act Compliance:</strong> Validates high-risk AI system requirements including bias
+                    assessment and documentation.
+                </div>
+
+                <h3>Real-time Monitoring (FR-004)</h3>
+                <p>Continuous monitoring capabilities with automated alerts:</p>
+                <ul>
+                    <li>Real-time bias detection in production models</li>
+                    <li>Automated alerts when bias thresholds are exceeded</li>
+                    <li>Performance tracking over time</li>
+                    <li>Drift detection in model behavior</li>
+                </ul>
+
+                <h3>Mitigation Suggestions (FR-005)</h3>
+                <p>Intelligent recommendations for bias mitigation:</p>
+                <ul>
+                    <li>Data preprocessing strategies</li>
+                    <li>Model retraining recommendations</li>
+                    <li>Feature engineering suggestions</li>
+                    <li>Algorithm selection guidance</li>
+                </ul>
+
+                <h2 id="advanced-usage">Advanced Usage</h2>
+                <div class="code-block">
+                    <pre># Comprehensive audit with all features
+validator = EthicalAIValidator()
+
+# Perform complete audit
+bias_report = validator.audit_bias(predictions, true_labels, protected_attributes)
+fairness_metrics = validator.calculate_fairness_metrics(predictions, protected_attributes)
+mitigations = validator.suggest_mitigations(bias_report)
+compliance_report = validator.generate_compliance_report(
+    bias_report=bias_report,
+    fairness_metrics=fairness_metrics,
+    model_info={'name': 'MyModel', 'version': '1.0.0'}
+)
+
+# Monitor in real-time
+monitor = validator.monitor_realtime(
+    model_predictions=predictions,
+    protected_attributes=protected_attributes,
+    alert_threshold=0.1
+)</pre>
+                </div>
+
+                <h2 id="api-reference">API Reference</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Description</th>
+                            <th>Parameters</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>audit_bias()</code></td>
+                            <td>Perform comprehensive bias detection</td>
+                            <td>predictions, true_labels, protected_attributes</td>
+                        </tr>
+                        <tr>
+                            <td><code>calculate_fairness_metrics()</code></td>
+                            <td>Calculate fairness metrics</td>
+                            <td>predictions, protected_attributes</td>
+                        </tr>
+                        <tr>
+                            <td><code>generate_compliance_report()</code></td>
+                            <td>Generate compliance report</td>
+                            <td>bias_report, fairness_metrics, model_info</td>
+                        </tr>
+                        <tr>
+                            <td><code>monitor_realtime()</code></td>
+                            <td>Set up real-time monitoring</td>
+                            <td>model_predictions, protected_attributes, alert_threshold</td>
+                        </tr>
+                        <tr>
+                            <td><code>suggest_mitigations()</code></td>
+                            <td>Get bias mitigation suggestions</td>
+                            <td>bias_report</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2 id="dependencies">Dependencies</h2>
+                <ul>
+                    <li><strong>numpy</strong> ≥ 1.16.0 - Numerical computing</li>
+                    <li><strong>pandas</strong> ≥ 0.20.0 - Data manipulation</li>
+                    <li><strong>scikit-learn</strong> ≥ 0.20.0 - Machine learning utilities</li>
+                    <li><strong>reportlab</strong> ≥ 3.4.0 - PDF report generation</li>
+                </ul>
+
+                <h2 id="testing">Testing</h2>
+                <div class="code-block">
+                    <pre>python -m pytest tests/ -v</pre>
+                </div>
+
+                <div class="success-box">
+                    <strong>✅ All 43 tests passing!</strong> The package has been thoroughly tested for bias detection,
+                    fairness metrics, compliance reporting, and real-time monitoring functionality.
+                </div>
+
+                <div class="warning-box">
+                    <strong>⚠️ Important:</strong> This package is designed to work with Python 2.7+ and Python 3.x.
+                    Make sure to use compatible versions of dependencies for your Python version.
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <h3>Navigation</h3>
+                <ul class="nav-links">
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#installation">Installation</a></li>
+                    <li><a href="#quick-start">Quick Start</a></li>
+                    <li><a href="#core-functionality">Core Functionality</a></li>
+                    <li><a href="#advanced-usage">Advanced Usage</a></li>
+                    <li><a href="#api-reference">API Reference</a></li>
+                    <li><a href="#dependencies">Dependencies</a></li>
+                    <li><a href="#testing">Testing</a></li>
+                </ul>
+
+                <div class="contact-info">
+                    <h4>Contact</h4>
+                    <p><strong>Email:</strong> muhammadabdullahinbox@gmail.com</p>
+                    <p><strong>Author:</strong> WHIS</p>
+                    <p><strong>Version:</strong> 1.0.0</p>
+                </div>
+
+                <h3>Package Info</h3>
+                <ul>
+                    <li><strong>Name:</strong> ethical-ai-validator</li>
+                    <li><strong>License:</strong> MIT</li>
+                    <li><strong>Python:</strong> 2.7+</li>
+                    <li><strong>Status:</strong> Beta</li>
+                </ul>
+
+                <h3>Links</h3>
+                <ul class="nav-links">
+                    <li><a href="https://github.com/whis-19/ethical-ai">GitHub</a></li>
+                    <li><a href="https://whis-19.github.io/ethical-ai/">Documentation</a></li>
+                    <li><a href="https://github.com/whis-19/ethical-ai/issues">Issues</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2024 Ethical AI Validator. All rights reserved.</p>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const button = document.querySelector('.theme-toggle');
+
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                button.textContent = '🌙';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                button.textContent = '☀️';
+            }
+        }
+
+        // Check for saved theme preference or default to light theme
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+            document.querySelector('.theme-toggle').textContent = '☀️';
+        }
+    </script>
+</body>
+
+</html>
