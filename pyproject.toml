@@ -59,10 +59,10 @@ full = [
 ethical-ai-validator = "ethical_ai_validator.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/ethical-ai-validator/ethical-ai-validator"
-Documentation = "https://ethical-ai-validator.readthedocs.io/"
-Repository = "https://github.com/ethical-ai-validator/ethical-ai-validator"
-"Bug Tracker" = "https://github.com/ethical-ai-validator/ethical-ai-validator/issues"
+Homepage = "https://github.com/whis-19/ethical-ai"
+Documentation = "https://whis-19.github.io/ethical-ai/"
+Repository = "https://github.com/whis-19/ethical-ai"
+"Bug Tracker" = "https://github.com/whis-19/ethical-ai/issues"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

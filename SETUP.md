@@ -13,7 +13,7 @@ Before starting, ensure you have the following installed:
 
 ```bash
 # Clone the repository
-git clone https://github.com/whs-19/ethical-ai-validator.git
+git clone https://github.com/whis-19/ethical-ai.git
 
 # Navigate to the project directory
 cd ethical-ai-validator
@@ -261,7 +261,7 @@ pip install pytest pytest-cov pytest-mock
 #### Issue: Git authentication fails
 ```bash
 # Solution: Set up SSH keys or use HTTPS
-git remote set-url origin https://github.com/whs-19/ethical-ai-validator.git
+git remote set-url origin https://github.com/whis-19/ethical-ai.git
 ```
 
 ## Environment Variables

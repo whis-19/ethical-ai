@@ -3,6 +3,24 @@ Basic usage example for Ethical AI Validator.
 
 This example demonstrates how to use the EthicalAIValidator
 to audit a machine learning model for bias, fairness, and compliance.
+
+This comprehensive example shows:
+1. Data preparation with synthetic sensitive features
+2. Model training using scikit-learn
+3. Bias detection across multiple protected attributes
+4. Fairness metrics calculation
+5. Compliance report generation
+6. Real-time monitoring setup
+7. Mitigation suggestions
+
+The example uses synthetic data to simulate a real-world scenario
+where an organization needs to audit their AI model for ethical
+compliance and fairness across different demographic groups.
+
+Author: WHIS (muhammadabdullahinbox@gmail.com)
+Version: 1.0.0
+Repository: https://github.com/whis-19/ethical-ai
+Documentation: https://whis-19.github.io/ethical-ai/
 """
 
 import pandas as pd
@@ -18,7 +36,20 @@ from ethical_ai_validator.ethical_ai_validator import EthicalAIValidator
 
 
 def main():
-    """Run a basic example of ethical AI validation."""
+    """
+    Run a comprehensive example of ethical AI validation.
+    
+    This function demonstrates the complete workflow for auditing an AI model
+    for bias, fairness, and compliance. It includes data preparation, model
+    training, bias detection, fairness assessment, compliance reporting,
+    real-time monitoring, and mitigation suggestions.
+    
+    The example uses synthetic data to simulate a real-world scenario where
+    an organization needs to ensure their AI model is fair and compliant
+    across different demographic groups.
+    
+    Author: WHIS (muhammadabdullahinbox@gmail.com)
+    """
     
     print("Ethical AI Validator - Basic Usage Example")
     print("=" * 50)

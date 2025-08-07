@@ -22,8 +22,8 @@ pip install eai
 ### From Source
 
 ```bash
-git clone https://github.com/whs-19/eai.git
-cd eai
+git clone https://github.com/whis-19/ethical-ai.git
+cd ethical-ai
 pip install -e .
 ```
 
@@ -107,8 +107,8 @@ mitigations = suggest_mitigations(bias_report)
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/whs-19/ethical-ai-validator.git
-   cd ethical-ai-validator
+   git clone https://github.com/whis-19/ethical-ai.git
+cd ethical-ai
    ```
 
 2. **Create a virtual environment**
@@ -202,8 +202,7 @@ pre-commit run --all-files
 
 ## Documentation
 
-- [User Guide](https://ethical-ai-validator.readthedocs.io/)
-- [API Reference](https://ethical-ai-validator.readthedocs.io/en/latest/api.html)
+- [User Guide](https://whis-19.github.io/ethical-ai/)
 - [Contributing Guide](CONTRIBUTING.md)
 
 ## License
@@ -212,12 +211,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/whs-19/ethical-ai-validator/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/whs-19/ethical-ai-validator/discussions)
-- **Email**: muhammad.abdullah@example.com
+- **Issues**: [GitHub Issues](https://github.com/whis-19/ethical-ai/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/whis-19/ethical-ai/discussions)
+- **Email**: muhammadabdullahinbox@gmail.com
 
 ## Acknowledgments
 
 - Inspired by the need for ethical AI development
 - Built with support from the open-source community
-- Special thanks to contributors and maintainers 
+- Special thanks to contributors and maintainers ([WHIS-19](https://github.com/whis-19/))

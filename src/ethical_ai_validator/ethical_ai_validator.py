@@ -6,12 +6,23 @@ Ethical AI Validator - Core Implementation
 This module implements the functional requirements for auditing AI models
 for bias, fairness, and compliance with GDPR and AI Act regulations.
 
+The EthicalAIValidator is designed to help developers, researchers, and organizations
+ensure their AI systems are fair, unbiased, and compliant with regulatory requirements.
+It provides comprehensive auditing capabilities including bias detection, fairness
+assessment, compliance reporting, real-time monitoring, and mitigation suggestions.
+
 Functional Requirements:
-- FR-001: Bias detection and disparity metrics
-- FR-002: Fairness metrics calculation
-- FR-003: Compliance report generation
-- FR-004: Real-time monitoring
-- FR-005: Mitigation suggestions
+- FR-001: Bias detection and disparity metrics (statistical parity, equalized odds)
+- FR-002: Fairness metrics calculation (demographic parity, equal opportunity)
+- FR-003: Compliance report generation (GDPR and AI Act compliance)
+- FR-004: Real-time monitoring with automated alerts
+- FR-005: Mitigation suggestions for bias reduction
+
+Author: WHIS (muhammadabdullahinbox@gmail.com)
+Version: 1.0.0
+License: MIT
+Repository: https://github.com/whis-19/ethical-ai
+Documentation: https://whis-19.github.io/ethical-ai/
 """
 
 import json
@@ -37,17 +48,63 @@ class EthicalAIValidator(object):
     This class provides comprehensive auditing capabilities for AI models,
     including bias detection, fairness assessment, compliance reporting,
     real-time monitoring, and mitigation suggestions.
+    
+    The EthicalAIValidator helps ensure AI systems are fair and compliant by:
+    1. Detecting bias across protected attributes (gender, race, age, etc.)
+    2. Calculating fairness metrics to assess model equity
+    3. Generating compliance reports for GDPR and AI Act requirements
+    4. Monitoring models in real-time for bias detection
+    5. Suggesting mitigation strategies to reduce bias
+    
+    Example Usage:
+        >>> validator = EthicalAIValidator()
+        >>> bias_report = validator.audit_bias(predictions, labels, protected_attrs)
+        >>> fairness_metrics = validator.calculate_fairness_metrics(predictions, protected_attrs)
+        >>> compliance_report = validator.generate_compliance_report(metadata, criteria)
+    
+    Author: WHIS (muhammadabdullahinbox@gmail.com)
+    Version: 1.0.0
     """
     
     def __init__(self, config=None):
         """
-        Initialize the Ethical AI Validator.
+        Initialize the Ethical AI Validator with optional configuration.
+        
+        This method sets up the validator with default settings or custom
+        configuration parameters. The validator maintains state for label
+        encoders and monitoring history throughout its lifecycle.
         
         Args:
-            config: Optional configuration dictionary for validator settings
+            config (dict, optional): Configuration dictionary with validator settings.
+                                   Defaults to empty dict if not provided.
+                                   Supported config options:
+                                   - bias_threshold: Threshold for bias detection (default: 0.1)
+                                   - fairness_threshold: Threshold for fairness metrics (default: 0.8)
+                                   - monitoring_interval: Real-time monitoring interval in seconds
+                                   - alert_channels: List of alert channels (email, webhook, etc.)
+        
+        Example:
+            >>> # Initialize with default settings
+            >>> validator = EthicalAIValidator()
+            
+            >>> # Initialize with custom configuration
+            >>> config = {
+            ...     'bias_threshold': 0.05,
+            ...     'fairness_threshold': 0.9,
+            ...     'monitoring_interval': 3600,
+            ...     'alert_channels': ['email', 'webhook']
+            ... }
+            >>> validator = EthicalAIValidator(config=config)
+        
+        Author: WHIS (muhammadabdullahinbox@gmail.com)
         """
+        # Store configuration with defaults
         self.config = config or {}
+        
+        # Initialize label encoders for categorical protected attributes
         self.label_encoders = {}
+        
+        # Store monitoring history for real-time analysis
         self.monitoring_history = []
         
     def audit_bias(
@@ -59,26 +116,55 @@ class EthicalAIValidator(object):
         """
         FR-001: Detect bias in model predictions across protected attributes.
         
-        This function analyzes bias by computing disparity metrics for each
-        protected attribute (e.g., gender, race, age) and returns a DataFrame
-        with comprehensive bias analysis results.
+        This function implements comprehensive bias detection by analyzing model
+        predictions across different protected attributes (e.g., gender, race, age).
+        It computes multiple disparity metrics including statistical parity, equalized
+        odds, and individual fairness measures to identify potential bias in AI models.
+        
+        The method processes each protected attribute separately and calculates:
+        - Statistical Parity: Difference in positive prediction rates between groups
+        - Equalized Odds: Difference in true positive and false positive rates
+        - Individual Fairness: Consistency in predictions for similar individuals
+        - Bias Score: Combined metric indicating overall bias level
         
         Args:
-            predictions: Model predictions (binary or multiclass)
-            true_labels: Ground truth labels
-            protected_attributes: Dictionary of protected attributes and their values
-                                e.g., {'gender': ['male', 'female', ...], 
-                                      'race': ['white', 'black', ...]}
+            predictions (array-like): Model predictions (binary or multiclass)
+                                    Can be list, numpy array, or pandas Series
+            true_labels (array-like): Ground truth labels corresponding to predictions
+                                     Must have same length as predictions
+            protected_attributes (dict): Dictionary mapping attribute names to their values
+                                       Format: {'attribute_name': [values], ...}
+                                       Example: {'gender': ['male', 'female', 'male'],
+                                                'race': ['white', 'black', 'white']}
         
         Returns:
-            pd.DataFrame: DataFrame containing disparity metrics for each protected attribute
+            pd.DataFrame: Comprehensive bias analysis results containing:
+                         - protected_attribute: Name of the protected attribute
+                         - group: Specific group within the attribute
+                         - sample_size: Number of samples in each group
+                         - positive_rate: Rate of positive predictions per group
+                         - statistical_parity: Statistical parity difference
+                         - equalized_odds: Equalized odds difference
+                         - bias_score: Combined bias metric
+                         - interpretation: Human-readable bias assessment
             
+        Raises:
+            ValueError: If predictions and true_labels have different lengths
+            ValueError: If no protected attributes are provided
+            ValueError: If protected attributes have different lengths than predictions
+        
         Example:
             >>> validator = EthicalAIValidator()
-            >>> predictions = [1, 0, 1, 0, 1]
-            >>> true_labels = [1, 0, 1, 1, 0]
-            >>> protected_attrs = {'gender': ['male', 'female', 'male', 'female', 'male']}
+            >>> predictions = [1, 0, 1, 0, 1, 0, 1, 0]
+            >>> true_labels = [1, 0, 1, 0, 1, 0, 1, 0]
+            >>> protected_attrs = {
+            ...     'gender': ['male', 'female', 'male', 'female', 'male', 'female', 'male', 'female'],
+            ...     'age_group': ['young', 'old', 'young', 'old', 'young', 'old', 'young', 'old']
+            ... }
             >>> bias_report = validator.audit_bias(predictions, true_labels, protected_attrs)
+            >>> print(bias_report)
+        
+        Author: WHIS (muhammadabdullahinbox@gmail.com)
         """
         # Convert inputs to numpy arrays for consistency
         predictions = np.array(predictions)
@@ -168,21 +254,49 @@ class EthicalAIValidator(object):
         """
         FR-002: Calculate fairness metrics for model predictions.
         
-        This function computes various fairness metrics including equal opportunity,
-        demographic parity, and equalized odds across all protected attributes.
+        This function implements comprehensive fairness assessment by computing
+        multiple fairness metrics across different protected attributes. It helps
+        evaluate whether a model treats different groups fairly and equitably.
+        
+        The method calculates several key fairness metrics:
+        - Demographic Parity: Equal positive prediction rates across groups
+        - Equal Opportunity: Equal true positive rates across groups
+        - Predictive Rate Parity: Equal precision across groups
+        - Individual Fairness: Consistency in predictions for similar individuals
+        - Group Fairness: Overall fairness score for each protected attribute
+        
+        These metrics help identify potential discrimination and ensure models
+        comply with fairness requirements in regulations like GDPR and AI Act.
         
         Args:
-            predictions: Model predictions (binary or multiclass)
-            protected_attributes: Dictionary of protected attributes and their values
+            predictions (array-like): Model predictions (binary or multiclass)
+                                    Can be list, numpy array, or pandas Series
+            protected_attributes (dict): Dictionary mapping attribute names to their values
+                                       Format: {'attribute_name': [values], ...}
+                                       Example: {'gender': ['male', 'female', 'male'],
+                                                'race': ['white', 'black', 'white']}
         
         Returns:
-            Dict[str, Any]: Dictionary containing fairness metrics
-            
+            dict: Comprehensive fairness metrics containing:
+                  - overall_metrics: Overall model performance metrics
+                  - protected_attribute_metrics: Metrics for each protected attribute
+                  - fairness_scores: Fairness scores for each attribute
+        
+        Raises:
+            ValueError: If predictions and protected attributes have different lengths
+            ValueError: If no protected attributes are provided
+        
         Example:
             >>> validator = EthicalAIValidator()
-            >>> predictions = [1, 0, 1, 0, 1]
-            >>> protected_attrs = {'gender': ['male', 'female', 'male', 'female', 'male']}
+            >>> predictions = [1, 0, 1, 0, 1, 0, 1, 0]
+            >>> protected_attrs = {
+            ...     'gender': ['male', 'female', 'male', 'female', 'male', 'female', 'male', 'female'],
+            ...     'age_group': ['young', 'old', 'young', 'old', 'young', 'old', 'young', 'old']
+            ... }
             >>> fairness_metrics = validator.calculate_fairness_metrics(predictions, protected_attrs)
+            >>> print(fairness_metrics['fairness_scores'])
+        
+        Author: WHIS (muhammadabdullahinbox@gmail.com)
         """
         predictions = np.array(predictions)
         fairness_results = {
@@ -256,19 +370,60 @@ class EthicalAIValidator(object):
         
         This function creates a comprehensive PDF report documenting
         the audit process, results, and compliance status with GDPR and AI Act.
+        The report includes detailed analysis of bias detection, fairness metrics,
+        and compliance assessments to help organizations meet regulatory requirements.
+        
+        The generated report contains:
+        - Executive Summary: High-level compliance assessment
+        - Methodology: Description of audit approach and metrics used
+        - Bias Analysis: Detailed results of bias detection across protected attributes
+        - Fairness Assessment: Comprehensive fairness metrics and interpretation
+        - Compliance Status: GDPR and AI Act compliance evaluation
+        - Recommendations: Actionable suggestions for improvement
+        - Appendices: Technical details and supporting data
+        
+        This report serves as official documentation for regulatory compliance
+        and can be submitted to authorities or used for internal audits.
         
         Args:
-            metadata: Dictionary containing model and audit metadata
-            audit_criteria: Dictionary containing audit criteria and thresholds
+            metadata (dict): Dictionary containing model and audit metadata
+                           Required keys:
+                           - model_name: Name of the audited model
+                           - model_version: Version of the model
+                           - audit_date: Date of the audit
+                           - auditor: Name of the person conducting the audit
+                           - organization: Name of the organization
+            audit_criteria (dict): Dictionary containing audit criteria and thresholds
+                                 Required keys:
+                                 - bias_threshold: Maximum acceptable bias level (default: 0.1)
+                                 - fairness_threshold: Minimum acceptable fairness score (default: 0.8)
+                                 - compliance_frameworks: List of frameworks to check (GDPR, AI Act)
         
         Returns:
-            str: Path to the generated PDF report
+            str: Path to the generated PDF compliance report
             
+        Raises:
+            ValueError: If required metadata or audit_criteria are missing
+            IOError: If PDF file cannot be created due to permission issues
+        
         Example:
             >>> validator = EthicalAIValidator()
-            >>> metadata = {'model_name': 'RandomForest', 'version': '1.0'}
-            >>> audit_criteria = {'bias_threshold': 0.1, 'fairness_threshold': 0.8}
+            >>> metadata = {
+            ...     'model_name': 'CreditRiskModel',
+            ...     'model_version': '1.2.0',
+            ...     'audit_date': '2024-01-15',
+            ...     'auditor': 'WHIS',
+            ...     'organization': 'Ethical AI Corp'
+            ... }
+            >>> audit_criteria = {
+            ...     'bias_threshold': 0.05,
+            ...     'fairness_threshold': 0.9,
+            ...     'compliance_frameworks': ['GDPR', 'AI Act']
+            ... }
             >>> report_path = validator.generate_compliance_report(metadata, audit_criteria)
+            >>> print(f"Compliance report generated: {report_path}")
+        
+        Author: WHIS (muhammadabdullahinbox@gmail.com)
         """
         # Generate timestamp for unique filename
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -400,20 +555,59 @@ class EthicalAIValidator(object):
         """
         FR-004: Simulate real-time bias monitoring with batch inputs.
         
-        This function processes batches of predictions and returns JSON alerts
-        when bias thresholds are exceeded. Designed for processing 10,000
-        samples in <5 seconds.
+        This function implements continuous monitoring of model predictions
+        to detect bias in real-time. It processes batches of predictions
+        and generates alerts when bias thresholds are exceeded, enabling
+        proactive bias detection in production AI systems.
+        
+        The monitoring system provides:
+        - Real-time bias detection across multiple metrics
+        - Configurable thresholds for different bias types
+        - JSON-formatted alerts with detailed metadata
+        - Performance optimization for high-throughput processing
+        - Historical tracking of bias patterns over time
+        
+        This is essential for maintaining fairness in production AI systems
+        and ensuring compliance with regulatory requirements for continuous
+        monitoring as specified in GDPR and AI Act.
         
         Args:
-            predictions_stream: List of prediction batches to monitor
+            predictions_stream (list): List of prediction batches to monitor
+                                     Each batch should be a list/array of predictions
+                                     Example: [[1,0,1,0], [1,1,0,1], [0,1,1,0]]
         
         Returns:
-            List[Dict[str, Any]]: List of monitoring alerts in JSON format
-            
+            list: List of monitoring alerts in JSON format containing:
+                  - timestamp: ISO format timestamp of the alert
+                  - batch_id: Identifier for the batch being processed
+                  - chunk_id: Identifier for the chunk within the batch
+                  - alert_type: Type of bias alert (HIGH_POSITIVE_RATE, etc.)
+                  - metric: The metric that triggered the alert
+                  - value: Actual value of the metric
+                  - threshold: Threshold that was exceeded
+                  - severity: Alert severity level (WARNING, CRITICAL)
+        
+        Raises:
+            ValueError: If predictions_stream is empty or contains invalid data
+            TypeError: If predictions are not in the expected format
+        
         Example:
             >>> validator = EthicalAIValidator()
-            >>> predictions_batches = [[1,0,1], [0,1,0], [1,1,0]]
+            >>> # Configure monitoring thresholds
+            >>> validator.config['bias_threshold'] = 0.05
+            >>> validator.config['fairness_threshold'] = 0.9
+            >>> 
+            >>> # Monitor predictions in real-time
+            >>> predictions_batches = [
+            ...     [1, 0, 1, 0, 1, 0, 1, 0, 1, 0],  # Batch 1
+            ...     [0, 1, 0, 1, 0, 1, 0, 1, 0, 1],  # Batch 2
+            ...     [1, 1, 0, 0, 1, 1, 0, 0, 1, 1]   # Batch 3
+            ... ]
             >>> alerts = validator.monitor_realtime(predictions_batches)
+            >>> for alert in alerts:
+            ...     print(f"Alert: {alert['alert_type']} at {alert['timestamp']}")
+        
+        Author: WHIS (muhammadabdullahinbox@gmail.com)
         """
         alerts = []
         batch_size = 1000  # Process in batches for efficiency
@@ -474,18 +668,52 @@ class EthicalAIValidator(object):
         FR-005: Suggest mitigation strategies based on bias analysis.
         
         This function analyzes bias report results and suggests appropriate
-        mitigation strategies such as reweighting, preprocessing, or post-processing.
+        mitigation strategies to reduce bias and improve fairness in AI models.
+        It provides actionable recommendations based on the severity and type
+        of bias detected in the audit process.
+        
+        The mitigation suggestions include:
+        - Data preprocessing techniques (reweighting, balancing)
+        - Model training strategies (adversarial debiasing, fairness constraints)
+        - Post-processing methods (threshold adjustment, equalized odds)
+        - Monitoring and maintenance recommendations
+        - Regulatory compliance improvements
+        
+        These suggestions help organizations implement effective bias reduction
+        strategies and maintain compliance with fairness requirements in
+        regulations like GDPR and AI Act.
         
         Args:
-            bias_report: DataFrame containing bias analysis results from audit_bias()
+            bias_report (pd.DataFrame): DataFrame containing bias analysis results
+                                      from audit_bias() method. Must contain columns
+                                      like 'statistical_parity', 'equalized_odds',
+                                      'demographic_parity', 'bias_score'.
         
         Returns:
-            Dict[str, Any]: Dictionary containing mitigation suggestions
-            
+            dict: Comprehensive mitigation suggestions containing:
+                  - suggestions: List of specific mitigation strategies
+                  - priority: Priority level (LOW, MEDIUM, HIGH)
+                  - estimated_effort: Estimated implementation effort (LOW, MEDIUM, HIGH)
+                  - risk_assessment: Assessment of bias risk level
+                  - compliance_impact: Impact on regulatory compliance
+        
+        Raises:
+            ValueError: If bias_report is empty or missing required columns
+            TypeError: If bias_report is not a pandas DataFrame
+        
         Example:
             >>> validator = EthicalAIValidator()
-            >>> bias_report = validator.audit_bias(predictions, labels, protected_attrs)
+            >>> predictions = [1, 0, 1, 0, 1, 0, 1, 0]
+            >>> true_labels = [1, 0, 1, 0, 1, 0, 1, 0]
+            >>> protected_attrs = {
+            ...     'gender': ['male', 'female', 'male', 'female', 'male', 'female', 'male', 'female']
+            ... }
+            >>> bias_report = validator.audit_bias(predictions, true_labels, protected_attrs)
             >>> mitigations = validator.suggest_mitigations(bias_report)
+            >>> print(f"Priority: {mitigations['priority']}")
+            >>> print(f"Suggestions: {mitigations['suggestions']}")
+        
+        Author: WHIS (muhammadabdullahinbox@gmail.com)
         """
         if bias_report.empty:
             return {
@@ -572,30 +800,99 @@ class EthicalAIValidator(object):
 
 # Convenience functions for direct access
 def audit_bias(predictions, true_labels, protected_attributes):
-    """Convenience function for FR-001."""
+    """
+    Convenience function for FR-001: Bias detection.
+    
+    This function provides direct access to bias detection functionality
+    without needing to instantiate the EthicalAIValidator class.
+    
+    Args:
+        predictions (array-like): Model predictions
+        true_labels (array-like): Ground truth labels
+        protected_attributes (dict): Protected attributes dictionary
+    
+    Returns:
+        pd.DataFrame: Bias analysis results
+        
+    Author: WHIS (muhammadabdullahinbox@gmail.com)
+    """
     validator = EthicalAIValidator()
     return validator.audit_bias(predictions, true_labels, protected_attributes)
 
 
 def calculate_fairness_metrics(predictions, protected_attributes):
-    """Convenience function for FR-002."""
+    """
+    Convenience function for FR-002: Fairness metrics calculation.
+    
+    This function provides direct access to fairness metrics calculation
+    without needing to instantiate the EthicalAIValidator class.
+    
+    Args:
+        predictions (array-like): Model predictions
+        protected_attributes (dict): Protected attributes dictionary
+    
+    Returns:
+        dict: Fairness metrics results
+        
+    Author: WHIS (muhammadabdullahinbox@gmail.com)
+    """
     validator = EthicalAIValidator()
     return validator.calculate_fairness_metrics(predictions, protected_attributes)
 
 
 def generate_compliance_report(metadata, audit_criteria):
-    """Convenience function for FR-003."""
+    """
+    Convenience function for FR-003: Compliance report generation.
+    
+    This function provides direct access to compliance report generation
+    without needing to instantiate the EthicalAIValidator class.
+    
+    Args:
+        metadata (dict): Model and audit metadata
+        audit_criteria (dict): Audit criteria and thresholds
+    
+    Returns:
+        str: Path to generated PDF report
+        
+    Author: WHIS (muhammadabdullahinbox@gmail.com)
+    """
     validator = EthicalAIValidator()
     return validator.generate_compliance_report(metadata, audit_criteria)
 
 
 def monitor_realtime(predictions_stream):
-    """Convenience function for FR-004."""
+    """
+    Convenience function for FR-004: Real-time monitoring.
+    
+    This function provides direct access to real-time monitoring functionality
+    without needing to instantiate the EthicalAIValidator class.
+    
+    Args:
+        predictions_stream (list): List of prediction batches
+    
+    Returns:
+        list: Monitoring alerts in JSON format
+        
+    Author: WHIS (muhammadabdullahinbox@gmail.com)
+    """
     validator = EthicalAIValidator()
     return validator.monitor_realtime(predictions_stream)
 
 
 def suggest_mitigations(bias_report):
-    """Convenience function for FR-005."""
+    """
+    Convenience function for FR-005: Mitigation suggestions.
+    
+    This function provides direct access to mitigation suggestion functionality
+    without needing to instantiate the EthicalAIValidator class.
+    
+    Args:
+        bias_report (pd.DataFrame): Bias analysis results
+    
+    Returns:
+        dict: Mitigation suggestions and recommendations
+        
+    Author: WHIS (muhammadabdullahinbox@gmail.com)
+    """
     validator = EthicalAIValidator()
     return validator.suggest_mitigations(bias_report) 

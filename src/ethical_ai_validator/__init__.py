@@ -5,17 +5,33 @@ A comprehensive Python package for ethical AI validation and auditing,
 designed to detect bias, assess fairness, and ensure compliance with
 regulations like GDPR and AI Act.
 
-Features:
-- Bias detection and disparity metrics
-- Fairness assessment across protected attributes
-- GDPR and AI Act compliance reporting
-- Real-time monitoring with alerts
-- Automated mitigation suggestions
+This package provides a complete solution for organizations seeking to
+ensure their AI systems are fair, unbiased, and compliant with regulatory
+requirements. It implements all five functional requirements (FR-001 to FR-005)
+for comprehensive ethical AI validation.
+
+Key Features:
+- Bias Detection: Statistical parity, equalized odds, individual fairness
+- Fairness Assessment: Demographic parity, equal opportunity, predictive rate parity
+- Compliance Reporting: Automated GDPR and AI Act compliance reports
+- Real-time Monitoring: Continuous bias detection with automated alerts
+- Mitigation Suggestions: Intelligent recommendations for bias reduction
+
+The package is designed to work with Python 2.7+ and Python 3.x, making it
+compatible with a wide range of environments and existing codebases.
+
+Author: WHIS (muhammadabdullahinbox@gmail.com)
+Version: 1.0.0
+License: MIT
+Repository: https://github.com/whis-19/ethical-ai
+Documentation: https://whis-19.github.io/ethical-ai/
 
 Example:
     >>> from ethical_ai_validator import EthicalAIValidator
     >>> validator = EthicalAIValidator()
     >>> bias_report = validator.audit_bias(predictions, labels, protected_attrs)
+    >>> fairness_metrics = validator.calculate_fairness_metrics(predictions, protected_attrs)
+    >>> compliance_report = validator.generate_compliance_report(metadata, criteria)
 """
 
 __version__ = "1.0.0"
