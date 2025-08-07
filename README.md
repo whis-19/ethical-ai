@@ -16,7 +16,7 @@ A comprehensive Python package for ethical AI validation and auditing, designed 
 ### From PyPI (Recommended)
 
 ```bash
-pip install ethical-ai
+pip install whis-ethical-ai
 ```
 
 ### From Source

@@ -15,8 +15,13 @@ def read_readme():
     """Read README.md file for long description."""
     readme_path = os.path.join(os.path.dirname(__file__), 'README.md')
     if os.path.exists(readme_path):
-        with open(readme_path, 'r') as f:
-            return f.read()
+        try:
+            with open(readme_path, 'r', encoding='utf-8') as f:
+                return f.read()
+        except UnicodeDecodeError:
+            # Fallback to ASCII if UTF-8 fails
+            with open(readme_path, 'r', encoding='ascii', errors='ignore') as f:
+                return f.read()
     return "Ethical AI Validator - Comprehensive AI bias detection and fairness assessment"
 
 # Read requirements from requirements.txt
@@ -24,12 +29,17 @@ def read_requirements():
     """Read requirements from requirements.txt file."""
     requirements_path = os.path.join(os.path.dirname(__file__), 'requirements.txt')
     if os.path.exists(requirements_path):
-        with open(requirements_path, 'r') as f:
-            return [line.strip() for line in f if line.strip() and not line.startswith('#')]
+        try:
+            with open(requirements_path, 'r', encoding='utf-8') as f:
+                return [line.strip() for line in f if line.strip() and not line.startswith('#')]
+        except UnicodeDecodeError:
+            # Fallback to ASCII if UTF-8 fails
+            with open(requirements_path, 'r', encoding='ascii', errors='ignore') as f:
+                return [line.strip() for line in f if line.strip() and not line.startswith('#')]
     return []
 
 setup(
-    name="ethical-ai",
+    name="whis-ethical-ai",
     version="1.0.0",
     author="Ethical AI Team",
     author_email="muhammadabdullahinbox@gmail.com",
@@ -80,7 +90,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "ethical-ai=ethical_ai_validator.cli:main",
+            "whis-ethical-ai=ethical_ai_validator.cli:main",
         ],
     },
     include_package_data=True,
