@@ -108,7 +108,7 @@ class EthicalAIValidator(object):
         self.monitoring_history = []
         
         self.version = '1.1.0'
-    
+        
     def audit_bias(
         self, 
         predictions, 
@@ -446,23 +446,23 @@ class EthicalAIValidator(object):
             report_path = f"ethical_ai_audit_report_{timestamp}.pdf"
         # Create PDF document
         try:
-            doc = SimpleDocTemplate(report_path, pagesize=letter)
-            styles = getSampleStyleSheet()
-            story = []
-            
-            # Title
-            title_style = ParagraphStyle(
-                'CustomTitle',
-                parent=styles['Heading1'],
+        doc = SimpleDocTemplate(report_path, pagesize=letter)
+        styles = getSampleStyleSheet()
+        story = []
+        
+        # Title
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
                 fontSize=18,
-                spaceAfter=30,
+            spaceAfter=30,
                 alignment=1,  # Center alignment
                 textColor=colors.darkblue
-            )
-            story.append(Paragraph("Ethical AI Validator - Compliance Report", title_style))
+        )
+        story.append(Paragraph("Ethical AI Validator - Compliance Report", title_style))
             story.append(Spacer(1, 15))
-            
-            # Report metadata
+        
+        # Report metadata
             report_info_style = ParagraphStyle(
                 'ReportInfo',
                 parent=styles['Heading2'],
@@ -471,36 +471,36 @@ class EthicalAIValidator(object):
                 textColor=colors.darkblue
             )
             story.append(Paragraph("Report Information", report_info_style))
-            story.append(Paragraph("Generated: {}".format(datetime.now().strftime('%Y-%m-%d %H:%M:%S')), styles['Normal']))
-            story.append(Paragraph("Report ID: {}".format(timestamp), styles['Normal']))
+        story.append(Paragraph("Generated: {}".format(datetime.now().strftime('%Y-%m-%d %H:%M:%S')), styles['Normal']))
+        story.append(Paragraph("Report ID: {}".format(timestamp), styles['Normal']))
             story.append(Spacer(1, 15))
-            
-            # Model metadata
+        
+        # Model metadata
             story.append(Paragraph("Model Information", report_info_style))
-            for key, value in metadata.items():
+        for key, value in metadata.items():
                 if key not in ['bias_report', 'fairness_metrics']:  # Skip complex objects
-                    story.append(Paragraph("{}: {}".format(key, value), styles['Normal']))
+            story.append(Paragraph("{}: {}".format(key, value), styles['Normal']))
             story.append(Spacer(1, 15))
-            
-            # Audit criteria
+        
+        # Audit criteria
             story.append(Paragraph("Audit Criteria", report_info_style))
-            criteria_data = [[key, str(value)] for key, value in audit_criteria.items()]
+        criteria_data = [[key, str(value)] for key, value in audit_criteria.items()]
             criteria_table = Table(criteria_data)
-            criteria_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        criteria_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
                 ('FONTSIZE', (0, 0), (-1, 0), 10),
                 ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
                 ('TOPPADDING', (0, 0), (-1, 0), 8),
-                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
                 ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
                 ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
                 ('LEFTPADDING', (0, 0), (-1, -1), 6),
                 ('RIGHTPADDING', (0, 0), (-1, -1), 6)
-            ]))
-            story.append(criteria_table)
+        ]))
+        story.append(criteria_table)
             story.append(Spacer(1, 15))
             
             # Bias Analysis Section (if available)
@@ -632,19 +632,19 @@ class EthicalAIValidator(object):
             ]))
             story.append(summary_table)
             story.append(Spacer(1, 15))
-            
-            # GDPR Compliance Section
+        
+        # GDPR Compliance Section
             story.append(Paragraph("GDPR Compliance Assessment", report_info_style))
-            gdpr_requirements = [
-                "Data Minimization",
-                "Purpose Limitation", 
-                "Transparency",
-                "Accountability",
-                "Right to Explanation"
-            ]
-            
+        gdpr_requirements = [
+            "Data Minimization",
+            "Purpose Limitation", 
+            "Transparency",
+            "Accountability",
+            "Right to Explanation"
+        ]
+        
             # Assess GDPR compliance based on bias and fairness results
-            gdpr_data = [["Requirement", "Status", "Notes"]]
+        gdpr_data = [["Requirement", "Status", "Notes"]]
             
             # Check if bias analysis is available
             has_bias_issues = False
@@ -666,7 +666,7 @@ class EthicalAIValidator(object):
                             break
             
             # Determine compliance status
-            for req in gdpr_requirements:
+        for req in gdpr_requirements:
                 if req == "Transparency" and has_bias_issues:
                     gdpr_data.append([req, "Non-Compliant", "Bias detected - transparency compromised"])
                 elif req == "Accountability" and has_fairness_issues:
@@ -677,37 +677,37 @@ class EthicalAIValidator(object):
                     gdpr_data.append([req, "Compliant", "Audit completed successfully"])
             
             gdpr_table = Table(gdpr_data)
-            gdpr_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        gdpr_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
                 ('FONTSIZE', (0, 0), (-1, 0), 10),
                 ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
                 ('TOPPADDING', (0, 0), (-1, 0), 8),
-                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
                 ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
                 ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
                 ('LEFTPADDING', (0, 0), (-1, -1), 6),
                 ('RIGHTPADDING', (0, 0), (-1, -1), 6)
-            ]))
-            story.append(gdpr_table)
+        ]))
+        story.append(gdpr_table)
             story.append(Spacer(1, 15))
-            
-            # AI Act Compliance Section
+        
+        # AI Act Compliance Section
             story.append(Paragraph("AI Act Compliance Assessment", report_info_style))
-            ai_act_requirements = [
-                "Risk Assessment",
-                "Transparency Requirements",
-                "Human Oversight",
-                "Accuracy Requirements",
-                "Documentation"
-            ]
-            
+        ai_act_requirements = [
+            "Risk Assessment",
+            "Transparency Requirements",
+            "Human Oversight",
+            "Accuracy Requirements",
+            "Documentation"
+        ]
+        
             # Assess AI Act compliance based on bias and fairness results
-            ai_act_data = [["Requirement", "Status", "Notes"]]
+        ai_act_data = [["Requirement", "Status", "Notes"]]
             
-            for req in ai_act_requirements:
+        for req in ai_act_requirements:
                 if req == "Risk Assessment" and (has_bias_issues or has_fairness_issues):
                     ai_act_data.append([req, "Non-Compliant", "Bias/fairness risks identified"])
                 elif req == "Transparency Requirements" and has_bias_issues:
@@ -722,24 +722,24 @@ class EthicalAIValidator(object):
                     ai_act_data.append([req, "Compliant", "Audit completed successfully"])
             
             ai_act_table = Table(ai_act_data)
-            ai_act_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ai_act_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
                 ('FONTSIZE', (0, 0), (-1, 0), 10),
                 ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
                 ('TOPPADDING', (0, 0), (-1, 0), 8),
-                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
                 ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
                 ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
                 ('LEFTPADDING', (0, 0), (-1, -1), 6),
                 ('RIGHTPADDING', (0, 0), (-1, -1), 6)
-            ]))
-            story.append(ai_act_table)
+        ]))
+        story.append(ai_act_table)
             story.append(Spacer(1, 15))
-            
-            # Recommendations
+        
+        # Recommendations
             story.append(Paragraph("Recommendations", report_info_style))
             
             # Generate specific recommendations based on bias and fairness results
@@ -771,13 +771,13 @@ class EthicalAIValidator(object):
             
             # Add general recommendations if no specific issues found
             if not recommendations:
-                recommendations = [
-                    "Implement regular bias monitoring",
-                    "Establish fairness thresholds",
-                    "Document model decisions",
-                    "Provide model explanations",
-                    "Conduct regular compliance audits"
-                ]
+        recommendations = [
+            "Implement regular bias monitoring",
+            "Establish fairness thresholds",
+            "Document model decisions",
+            "Provide model explanations",
+            "Conduct regular compliance audits"
+        ]
             else:
                 # Add general best practices
                 recommendations.extend([
@@ -787,12 +787,12 @@ class EthicalAIValidator(object):
                     "Provide model explanations for affected groups",
                     "Consider human oversight for high-stakes decisions"
                 ])
-            
-            for i, rec in enumerate(recommendations, 1):
-                story.append(Paragraph("{}: {}".format(i, rec), styles['Normal']))
-            
-            # Build PDF
-            doc.build(story)
+        
+        for i, rec in enumerate(recommendations, 1):
+            story.append(Paragraph("{}: {}".format(i, rec), styles['Normal']))
+        
+        # Build PDF
+        doc.build(story)
         except Exception as e:
             raise IOError(f"Failed to save PDF report to '{report_path}': {e}")
         return report_path
