@@ -3,7 +3,7 @@ requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ethical-ai-validator"
+name = "ethical-ai"
 dynamic = ["version"]
 description = "Comprehensive ethical AI validation and auditing package"
 readme = "README.md"
@@ -56,7 +56,7 @@ full = [
 ]
 
 [project.scripts]
-ethical-ai-validator = "ethical_ai_validator.cli:main"
+ethical-ai = "ethical_ai_validator.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/whis-19/ethical-ai"

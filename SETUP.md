@@ -16,7 +16,7 @@ Before starting, ensure you have the following installed:
 git clone https://github.com/whis-19/ethical-ai.git
 
 # Navigate to the project directory
-cd ethical-ai-validator
+cd ethical-ai
 ```
 
 ## Step 2: Verify Python Installation
@@ -188,7 +188,7 @@ git remote -v
 
 1. **Start your day:**
    ```bash
-   cd ethical-ai-validator
+   cd ethical-ai
    source .venv/bin/activate
    git pull origin main
    ```

@@ -16,7 +16,7 @@ A comprehensive Python package for ethical AI validation and auditing, designed 
 ### From PyPI (Recommended)
 
 ```bash
-pip install eai
+pip install ethical-ai
 ```
 
 ### From Source
@@ -32,7 +32,7 @@ pip install -e .
 ### Basic Usage
 
 ```python
-from eai import EthicalAIValidator
+from ethical_ai_validator import EthicalAIValidator
 import numpy as np
 import pandas as pd
 
@@ -82,7 +82,7 @@ print(mitigations)
 ### Using Convenience Functions
 
 ```python
-from eai import (
+from ethical_ai_validator import (
     audit_bias, calculate_fairness_metrics, generate_compliance_report,
     monitor_realtime, suggest_mitigations
 )
@@ -145,7 +145,7 @@ cd ethical-ai
 ## Project Structure
 
 ```
-ethical-ai-validator/
+ethical-ai/
 ├── src/
 │   └── ethical_ai_validator/
 │       ├── __init__.py
@@ -207,7 +207,41 @@ pre-commit run --all-files
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for complete details.
+
+### License Summary
+
+**✅ Permitted:**
+- Commercial use
+- Modification and distribution
+- Private and public use
+- Patent use
+
+**❌ Limitations:**
+- No warranty provided
+- No liability for damages
+
+**📋 Requirements:**
+- Include copyright notice
+- Include license text
+- State any modifications
+
+### License Compatibility
+
+The MIT License is compatible with:
+- GPL (v2 and v3)
+- Apache License 2.0
+- BSD Licenses
+- Most other open-source licenses
+
+This makes it suitable for use in both open-source and commercial projects.
+
+### Third-Party Dependencies
+
+All dependencies are BSD-3-Clause licensed and compatible with MIT:
+- numpy, pandas, scikit-learn, reportlab
+
+For detailed license information, see the [LICENSE](LICENSE) file.
 
 ## Support
 

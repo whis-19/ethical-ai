@@ -60,7 +60,7 @@
 
         .header-content {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 20px;
@@ -72,14 +72,12 @@
             font-weight: 700;
             color: var(--text-primary);
             margin-bottom: 10px;
-            text-align: center;
         }
 
         .subtitle {
             font-size: 1.2rem;
             color: var(--text-secondary);
             margin-bottom: 20px;
-            text-align: center;
         }
 
         .badges {
@@ -153,6 +151,7 @@
             position: sticky;
             top: 20px;
             height: fit-content;
+            align-self: flex-start;
         }
 
         h2 {
@@ -198,7 +197,7 @@
             background: var(--code-bg);
             border: 1px solid var(--code-border);
             border-radius: 6px;
-            padding: 20px;
+            padding: 15px;
             margin: 20px 0;
             overflow-x: auto;
             font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
@@ -209,6 +208,7 @@
         .code-block pre {
             margin: 0;
             color: var(--text-primary);
+            white-space: pre-wrap;
         }
 
         .highlight {
@@ -294,15 +294,40 @@
 
         .contact-info {
             background: var(--bg-secondary);
-            border: 1px solid var(--border);
+            border: 2px solid var(--border);
             border-radius: 6px;
-            padding: 20px;
+            padding: 25px;
             margin-top: 20px;
+            min-height: 150px;
+            /* Increased size to fit longer email */
         }
 
         .contact-info h4 {
             color: var(--text-primary);
             margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .contact-info p {
+            color: var(--text-secondary);
+            margin: 10px 0;
+            text-align: left;
+            word-break: break-word;
+            /* Ensures email wraps if too long */
+        }
+
+        .contact-info p strong {
+            font-weight: 500;
+            margin-right: 10px;
+        }
+
+        .contact-info a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .contact-info a:hover {
+            text-decoration: underline;
         }
 
         .footer {
@@ -319,11 +344,26 @@
 
             .header-content {
                 flex-direction: column;
-                align-items: flex-start;
+                align-items: center;
             }
 
             .title-section h1 {
                 font-size: 2rem;
+            }
+
+            .sidebar {
+                position: relative;
+                top: 0;
+            }
+
+            .contact-info {
+                padding: 15px;
+                min-height: 180px;
+                /* Adjusted for mobile */
+            }
+
+            .contact-info p {
+                font-size: 0.9rem;
             }
         }
 
@@ -378,16 +418,13 @@
                 </div>
             </div>
         </div>
-
         <div class="content">
             <div class="main-content">
                 <p><strong>Ethical AI Validator makes it easy to detect bias, assess fairness, and ensure compliance
                         with regulations like GDPR and AI Act.</strong></p>
-
                 <p>Ethical AI Validator uses advanced statistical methods and machine learning techniques to analyze
                     model predictions across protected attributes, providing comprehensive bias detection, fairness
                     metrics, and automated compliance reporting.</p>
-
                 <h2 id="features">Features</h2>
                 <div class="feature-list">
                     <div class="feature-item">
@@ -418,19 +455,15 @@
                         </p>
                     </div>
                 </div>
-
                 <h2 id="installation">Installation</h2>
                 <div class="code-block">
-                    <pre>pip install ethical-ai-validator</pre>
+                    <pre>pip install ethical-ai</pre>
                 </div>
-
                 <h2 id="quick-start">Quick Start</h2>
                 <div class="code-block">
                     <pre>from ethical_ai_validator import EthicalAIValidator
-
 # Initialize the validator
 validator = EthicalAIValidator()
-
 # Sample data
 predictions = [1, 0, 1, 0, 1, 0, 1, 0]
 true_labels = [1, 0, 1, 0, 1, 0, 1, 0]
@@ -438,21 +471,17 @@ protected_attributes = {
     'gender': ['male', 'female', 'male', 'female', 'male', 'female', 'male', 'female'],
     'age_group': ['young', 'old', 'young', 'old', 'young', 'old', 'young', 'old']
 }
-
 # Perform bias audit
 bias_report = validator.audit_bias(
     predictions=predictions,
     true_labels=true_labels,
     protected_attributes=protected_attributes
 )
-
 print("Bias Report:")
 print(bias_report)</pre>
                 </div>
-
                 <h2 id="core-functionality">Core Functionality</h2>
-
-                <h3>Bias Detection (FR-001)</h3>
+                <h3>Bias Detection</h3>
                 <p>The package implements sophisticated bias detection algorithms that analyze model predictions across
                     different protected attributes:</p>
                 <ul>
@@ -463,8 +492,7 @@ print(bias_report)</pre>
                     <li><strong>Individual Fairness:</strong> Evaluates consistency in predictions for similar
                         individuals</li>
                 </ul>
-
-                <h3>Fairness Metrics (FR-002)</h3>
+                <h3>Fairness Metrics</h3>
                 <p>Comprehensive fairness assessment with multiple metrics:</p>
                 <table class="table">
                     <thead>
@@ -497,8 +525,7 @@ print(bias_report)</pre>
                         </tr>
                     </tbody>
                 </table>
-
-                <h3>Compliance Reporting (FR-003)</h3>
+                <h3>Compliance Reporting</h3>
                 <div class="info-box">
                     <strong>GDPR Compliance:</strong> Ensures data protection, right to explanation, and automated
                     decision-making transparency.
@@ -507,8 +534,7 @@ print(bias_report)</pre>
                     <strong>AI Act Compliance:</strong> Validates high-risk AI system requirements including bias
                     assessment and documentation.
                 </div>
-
-                <h3>Real-time Monitoring (FR-004)</h3>
+                <h3>Real-time Monitoring</h3>
                 <p>Continuous monitoring capabilities with automated alerts:</p>
                 <ul>
                     <li>Real-time bias detection in production models</li>
@@ -516,8 +542,7 @@ print(bias_report)</pre>
                     <li>Performance tracking over time</li>
                     <li>Drift detection in model behavior</li>
                 </ul>
-
-                <h3>Mitigation Suggestions (FR-005)</h3>
+                <h3>Mitigation Suggestions</h3>
                 <p>Intelligent recommendations for bias mitigation:</p>
                 <ul>
                     <li>Data preprocessing strategies</li>
@@ -525,12 +550,10 @@ print(bias_report)</pre>
                     <li>Feature engineering suggestions</li>
                     <li>Algorithm selection guidance</li>
                 </ul>
-
                 <h2 id="advanced-usage">Advanced Usage</h2>
                 <div class="code-block">
                     <pre># Comprehensive audit with all features
 validator = EthicalAIValidator()
-
 # Perform complete audit
 bias_report = validator.audit_bias(predictions, true_labels, protected_attributes)
 fairness_metrics = validator.calculate_fairness_metrics(predictions, protected_attributes)
@@ -540,7 +563,6 @@ compliance_report = validator.generate_compliance_report(
     fairness_metrics=fairness_metrics,
     model_info={'name': 'MyModel', 'version': '1.0.0'}
 )
-
 # Monitor in real-time
 monitor = validator.monitor_realtime(
     model_predictions=predictions,
@@ -548,7 +570,6 @@ monitor = validator.monitor_realtime(
     alert_threshold=0.1
 )</pre>
                 </div>
-
                 <h2 id="api-reference">API Reference</h2>
                 <table class="table">
                     <thead>
@@ -586,7 +607,6 @@ monitor = validator.monitor_realtime(
                         </tr>
                     </tbody>
                 </table>
-
                 <h2 id="dependencies">Dependencies</h2>
                 <ul>
                     <li><strong>numpy</strong> ≥ 1.16.0 - Numerical computing</li>
@@ -594,23 +614,55 @@ monitor = validator.monitor_realtime(
                     <li><strong>scikit-learn</strong> ≥ 0.20.0 - Machine learning utilities</li>
                     <li><strong>reportlab</strong> ≥ 3.4.0 - PDF report generation</li>
                 </ul>
-
                 <h2 id="testing">Testing</h2>
                 <div class="code-block">
                     <pre>python -m pytest tests/ -v</pre>
                 </div>
-
                 <div class="success-box">
                     <strong>✅ All 43 tests passing!</strong> The package has been thoroughly tested for bias detection,
                     fairness metrics, compliance reporting, and real-time monitoring functionality.
                 </div>
-
                 <div class="warning-box">
                     <strong>⚠️ Important:</strong> This package is designed to work with Python 2.7+ and Python 3.x.
                     Make sure to use compatible versions of dependencies for your Python version.
                 </div>
-            </div>
 
+                <h2 id="license">License</h2>
+                <div class="info-box">
+                    <strong>MIT License:</strong> This project is licensed under the MIT License, making it suitable for
+                    both open-source and commercial use.
+                </div>
+
+                <h3>License Permissions</h3>
+                <ul>
+                    <li><strong>✅ Commercial Use:</strong> Use in commercial applications and products</li>
+                    <li><strong>✅ Modification:</strong> Modify and adapt the code for your needs</li>
+                    <li><strong>✅ Distribution:</strong> Distribute copies of the software</li>
+                    <li><strong>✅ Private Use:</strong> Use in private and public projects</li>
+                    <li><strong>✅ Patent Use:</strong> Use in patent-eligible applications</li>
+                </ul>
+
+                <h3>License Requirements</h3>
+                <ul>
+                    <li><strong>📋 Copyright Notice:</strong> Include the original copyright notice</li>
+                    <li><strong>📋 License Text:</strong> Include the MIT license text</li>
+                    <li><strong>📋 Attribution:</strong> State any modifications made</li>
+                </ul>
+
+                <h3>Third-Party Dependencies</h3>
+                <p>All dependencies are BSD-3-Clause licensed and compatible with MIT:</p>
+                <ul>
+                    <li><strong>numpy:</strong> BSD-3-Clause</li>
+                    <li><strong>pandas:</strong> BSD-3-Clause</li>
+                    <li><strong>scikit-learn:</strong> BSD-3-Clause</li>
+                    <li><strong>reportlab:</strong> BSD-3-Clause</li>
+                </ul>
+
+                <div class="success-box">
+                    <strong>✅ Commercial Friendly:</strong> The MIT License allows unlimited commercial use,
+                    modification, and distribution.
+                </div>
+            </div>
             <div class="sidebar">
                 <h3>Navigation</h3>
                 <ul class="nav-links">
@@ -622,23 +674,23 @@ monitor = validator.monitor_realtime(
                     <li><a href="#api-reference">API Reference</a></li>
                     <li><a href="#dependencies">Dependencies</a></li>
                     <li><a href="#testing">Testing</a></li>
+                    <li><a href="#license">License</a></li>
                 </ul>
-
                 <div class="contact-info">
                     <h4>Contact</h4>
-                    <p><strong>Email:</strong> muhammadabdullahinbox@gmail.com</p>
+                    <p><strong>Email:</strong> <a
+                            href="mailto:muhammadabdullahinbox@gmail.com">muhammadabdullahinbox@gmail.com</a></p>
                     <p><strong>Author:</strong> WHIS</p>
                     <p><strong>Version:</strong> 1.0.0</p>
                 </div>
-
                 <h3>Package Info</h3>
                 <ul>
-                    <li><strong>Name:</strong> ethical-ai-validator</li>
-                    <li><strong>License:</strong> MIT</li>
+                    <li><strong>Name:</strong> ethical-ai</li>
+                    <li><strong>License:</strong> MIT (Commercial Friendly)</li>
                     <li><strong>Python:</strong> 2.7+</li>
                     <li><strong>Status:</strong> Beta</li>
+                    <li><strong>Author:</strong> WHIS-19</li>
                 </ul>
-
                 <h3>Links</h3>
                 <ul class="nav-links">
                     <li><a href="https://github.com/whis-19/ethical-ai">GitHub</a></li>
@@ -648,16 +700,13 @@ monitor = validator.monitor_realtime(
             </div>
         </div>
     </div>
-
     <div class="footer">
         <p>&copy; 2024 Ethical AI Validator. All rights reserved.</p>
     </div>
-
     <script>
         function toggleTheme() {
             const body = document.body;
             const button = document.querySelector('.theme-toggle');
-
             if (body.getAttribute('data-theme') === 'dark') {
                 body.removeAttribute('data-theme');
                 button.textContent = '🌙';
@@ -665,8 +714,8 @@ monitor = validator.monitor_realtime(
                 body.setAttribute('data-theme', 'dark');
                 button.textContent = '☀️';
             }
+            localStorage.setItem('theme', body.getAttribute('data-theme') || 'light');
         }
-
         // Check for saved theme preference or default to light theme
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'dark') {

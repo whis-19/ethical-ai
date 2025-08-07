@@ -29,7 +29,7 @@ def read_requirements():
     return []
 
 setup(
-    name="ethical-ai-validator",
+    name="ethical-ai",
     version="1.0.0",
     author="Ethical AI Team",
     author_email="muhammadabdullahinbox@gmail.com",
@@ -80,7 +80,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "ethical-ai-validator=ethical_ai_validator.cli:main",
+            "ethical-ai=ethical_ai_validator.cli:main",
         ],
     },
     include_package_data=True,
@@ -97,4 +97,5 @@ setup(
     ],
     platforms=["any"],
     license="MIT",
+    license_files=["LICENSE"],
 ) 
