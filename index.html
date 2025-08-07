@@ -61,6 +61,7 @@
         .header-content {
             display: flex;
             justify-content: space-between;
+            justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 20px;
@@ -152,6 +153,7 @@
             top: 20px;
             height: fit-content;
             align-self: flex-start;
+            align-self: flex-start;
         }
 
         h2 {
@@ -198,6 +200,7 @@
             border: 1px solid var(--code-border);
             border-radius: 6px;
             padding: 15px;
+            padding: 15px;
             margin: 20px 0;
             overflow-x: auto;
             font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
@@ -208,6 +211,7 @@
         .code-block pre {
             margin: 0;
             color: var(--text-primary);
+            white-space: pre-wrap;
             white-space: pre-wrap;
         }
 
@@ -295,7 +299,9 @@
         .contact-info {
             background: var(--bg-secondary);
             border: 2px solid var(--border);
+            border: 2px solid var(--border);
             border-radius: 6px;
+            padding: 25px;
             padding: 25px;
             margin-top: 20px;
             min-height: 150px;
@@ -306,6 +312,28 @@
             color: var(--text-primary);
             margin-bottom: 10px;
             font-weight: 600;
+        }
+
+        .contact-info p {
+            color: var(--text-secondary);
+            margin: 10px 0;
+            text-align: left;
+            word-break: break-word;
+            /* Ensures email wraps if too long */
+        }
+
+        .contact-info p strong {
+            font-weight: 500;
+            margin-right: 10px;
+        }
+
+        .contact-info a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .contact-info a:hover {
+            text-decoration: underline;
         }
 
         .contact-info p {
@@ -344,6 +372,7 @@
 
             .header-content {
                 flex-direction: column;
+                align-items: center;
                 align-items: center;
             }
 
@@ -482,6 +511,7 @@ print(bias_report)</pre>
                 </div>
                 <h2 id="core-functionality">Core Functionality</h2>
                 <h3>Bias Detection</h3>
+                <h3>Bias Detection</h3>
                 <p>The package implements sophisticated bias detection algorithms that analyze model predictions across
                     different protected attributes:</p>
                 <ul>
@@ -492,6 +522,7 @@ print(bias_report)</pre>
                     <li><strong>Individual Fairness:</strong> Evaluates consistency in predictions for similar
                         individuals</li>
                 </ul>
+                <h3>Fairness Metrics</h3>
                 <h3>Fairness Metrics</h3>
                 <p>Comprehensive fairness assessment with multiple metrics:</p>
                 <table class="table">
@@ -526,6 +557,7 @@ print(bias_report)</pre>
                     </tbody>
                 </table>
                 <h3>Compliance Reporting</h3>
+                <h3>Compliance Reporting</h3>
                 <div class="info-box">
                     <strong>GDPR Compliance:</strong> Ensures data protection, right to explanation, and automated
                     decision-making transparency.
@@ -535,6 +567,7 @@ print(bias_report)</pre>
                     assessment and documentation.
                 </div>
                 <h3>Real-time Monitoring</h3>
+                <h3>Real-time Monitoring</h3>
                 <p>Continuous monitoring capabilities with automated alerts:</p>
                 <ul>
                     <li>Real-time bias detection in production models</li>
@@ -542,6 +575,7 @@ print(bias_report)</pre>
                     <li>Performance tracking over time</li>
                     <li>Drift detection in model behavior</li>
                 </ul>
+                <h3>Mitigation Suggestions</h3>
                 <h3>Mitigation Suggestions</h3>
                 <p>Intelligent recommendations for bias mitigation:</p>
                 <ul>
@@ -714,6 +748,7 @@ monitor = validator.monitor_realtime(
                 body.setAttribute('data-theme', 'dark');
                 button.textContent = '☀️';
             }
+            localStorage.setItem('theme', body.getAttribute('data-theme') || 'light');
             localStorage.setItem('theme', body.getAttribute('data-theme') || 'light');
         }
         // Check for saved theme preference or default to light theme
