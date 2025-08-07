@@ -761,6 +761,74 @@ monitor = validator.monitor_realtime(
             document.querySelector('.theme-toggle').textContent = '☀️';
         }
     </script>
+    <!-- Experiment Reports Button -->
+    <button id="showReportsBtn" style="margin: 20px 0;">Show Experiment Reports</button>
+
+    <!-- Modal for PDF List and Viewer -->
+    <div id="reportsModal"
+        style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+        <div
+            style="background:#fff; border-radius:8px; padding:24px; max-width:700px; width:90vw; max-height:90vh; overflow:auto; position:relative;">
+            <button onclick="closeReportsModal()"
+                style="position:absolute; top:10px; right:10px; font-size:18px;">&times;</button>
+            <h2>Experiment Reports</h2>
+            <ul id="pdfList" style="list-style:none; padding:0; margin:0 0 20px 0;"></ul>
+            <div id="pdfViewerContainer" style="display:none; margin-top:20px;">
+                <iframe id="pdfViewer" width="100%" height="400px" style="border:1px solid #ccc;"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // List your PDF reports here (GitHub raw URLs)
+        const pdfReports = [
+            {
+                name: "Random Forest (Aggressive)",
+                url: "https://github.com/yourusername/yourrepo/raw/main/example_reports/Random_Forest_aggressive_compliance_report.pdf"
+            },
+            {
+                name: "Logistic Regression (Aggressive)",
+                url: "https://github.com/yourusername/yourrepo/raw/main/example_reports/Logistic_Regression_aggressive_compliance_report.pdf"
+            },
+            {
+                name: "Support Vector Machine (Aggressive)",
+                url: "https://github.com/yourusername/yourrepo/raw/main/example_reports/Support_Vector_Machine_aggressive_compliance_report.pdf"
+            },
+            // Add more reports as needed, following the same pattern
+        ];
+
+        function showReportsModal() {
+            document.getElementById('reportsModal').style.display = 'flex';
+            const list = document.getElementById('pdfList');
+            list.innerHTML = '';
+            pdfReports.forEach((report, idx) => {
+                const li = document.createElement('li');
+                li.style.margin = '8px 0';
+                const link = document.createElement('a');
+                link.href = '#';
+                link.textContent = report.name;
+                link.onclick = (e) => {
+                    e.preventDefault();
+                    showPdfInViewer(report.url);
+                };
+                li.appendChild(link);
+                list.appendChild(li);
+            });
+            document.getElementById('pdfViewerContainer').style.display = 'none';
+        }
+
+        function closeReportsModal() {
+            document.getElementById('reportsModal').style.display = 'none';
+            document.getElementById('pdfViewer').src = '';
+        }
+
+        function showPdfInViewer(url) {
+            document.getElementById('pdfViewer').src = url;
+            document.getElementById('pdfViewerContainer').style.display = 'block';
+        }
+
+        document.getElementById('showReportsBtn').onclick = showReportsModal;
+    </script>
 </body>
 
 </html>

@@ -72,3 +72,4 @@ where = ["src"]
 
 [tool.setuptools_scm]
 write_to = "src/ethical_ai_validator/_version.py" 
+version = "1.1.0" 

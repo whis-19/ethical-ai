@@ -19,7 +19,7 @@ Functional Requirements:
 - FR-005: Mitigation suggestions for bias reduction
 
 Author: WHIS (muhammadabdullahinbox@gmail.com)
-Version: 1.0.0
+Version: 1.1.0
 License: MIT
 Repository: https://github.com/whis-19/ethical-ai
 Documentation: https://whis-19.github.io/ethical-ai/
@@ -63,7 +63,7 @@ class EthicalAIValidator(object):
         >>> compliance_report = validator.generate_compliance_report(metadata, criteria)
     
     Author: WHIS (muhammadabdullahinbox@gmail.com)
-    Version: 1.0.0
+    Version: 1.1.0
     """
     
     def __init__(self, config=None):
@@ -107,6 +107,8 @@ class EthicalAIValidator(object):
         # Store monitoring history for real-time analysis
         self.monitoring_history = []
         
+        self.version = '1.1.0'
+    
     def audit_bias(
         self, 
         predictions, 
@@ -363,7 +365,8 @@ class EthicalAIValidator(object):
     def generate_compliance_report(
         self, 
         metadata, 
-        audit_criteria
+        audit_criteria,
+        output_path=None
     ):
         """
         FR-003: Generate a PDF compliance report using reportlab.
@@ -398,6 +401,7 @@ class EthicalAIValidator(object):
                                  - bias_threshold: Maximum acceptable bias level (default: 0.1)
                                  - fairness_threshold: Minimum acceptable fairness score (default: 0.8)
                                  - compliance_frameworks: List of frameworks to check (GDPR, AI Act)
+            output_path (str, optional): Path (including filename) to save the PDF report. If not provided, saves to current directory with a timestamped name.
         
         Returns:
             str: Path to the generated PDF compliance report
@@ -425,127 +429,372 @@ class EthicalAIValidator(object):
         
         Author: WHIS (muhammadabdullahinbox@gmail.com)
         """
-        # Generate timestamp for unique filename
+        import os
+        from os import makedirs
+        from os.path import dirname, exists, abspath
+        # Generate timestamp for unique filename if needed
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        report_path = "ethical_ai_audit_report_{}.pdf".format(timestamp)
-        
+        if output_path:
+            report_path = abspath(output_path)
+            report_dir = dirname(report_path)
+            if report_dir and not exists(report_dir):
+                try:
+                    makedirs(report_dir)
+                except Exception as e:
+                    raise IOError(f"Failed to create directory '{report_dir}': {e}")
+        else:
+            report_path = f"ethical_ai_audit_report_{timestamp}.pdf"
         # Create PDF document
-        doc = SimpleDocTemplate(report_path, pagesize=letter)
-        styles = getSampleStyleSheet()
-        story = []
-        
-        # Title
-        title_style = ParagraphStyle(
-            'CustomTitle',
-            parent=styles['Heading1'],
-            fontSize=16,
-            spaceAfter=30,
-            alignment=1  # Center alignment
-        )
-        story.append(Paragraph("Ethical AI Validator - Compliance Report", title_style))
-        story.append(Spacer(1, 12))
-        
-        # Report metadata
-        story.append(Paragraph("Report Information", styles['Heading2']))
-        story.append(Paragraph("Generated: {}".format(datetime.now().strftime('%Y-%m-%d %H:%M:%S')), styles['Normal']))
-        story.append(Paragraph("Report ID: {}".format(timestamp), styles['Normal']))
-        story.append(Spacer(1, 12))
-        
-        # Model metadata
-        story.append(Paragraph("Model Information", styles['Heading2']))
-        for key, value in metadata.items():
-            story.append(Paragraph("{}: {}".format(key, value), styles['Normal']))
-        story.append(Spacer(1, 12))
-        
-        # Audit criteria
-        story.append(Paragraph("Audit Criteria", styles['Heading2']))
-        criteria_data = [[key, str(value)] for key, value in audit_criteria.items()]
-        criteria_table = Table(criteria_data, colWidths=[2*inch, 3*inch])
-        criteria_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 12),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black)
-        ]))
-        story.append(criteria_table)
-        story.append(Spacer(1, 12))
-        
-        # GDPR Compliance Section
-        story.append(Paragraph("GDPR Compliance Assessment", styles['Heading2']))
-        gdpr_requirements = [
-            "Data Minimization",
-            "Purpose Limitation", 
-            "Transparency",
-            "Accountability",
-            "Right to Explanation"
-        ]
-        
-        gdpr_data = [["Requirement", "Status", "Notes"]]
-        for req in gdpr_requirements:
-            gdpr_data.append([req, "Compliant", "Audit completed"])
-        
-        gdpr_table = Table(gdpr_data, colWidths=[2*inch, 1*inch, 2*inch])
-        gdpr_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 12),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black)
-        ]))
-        story.append(gdpr_table)
-        story.append(Spacer(1, 12))
-        
-        # AI Act Compliance Section
-        story.append(Paragraph("AI Act Compliance Assessment", styles['Heading2']))
-        ai_act_requirements = [
-            "Risk Assessment",
-            "Transparency Requirements",
-            "Human Oversight",
-            "Accuracy Requirements",
-            "Documentation"
-        ]
-        
-        ai_act_data = [["Requirement", "Status", "Notes"]]
-        for req in ai_act_requirements:
-            ai_act_data.append([req, "Compliant", "Audit completed"])
-        
-        ai_act_table = Table(ai_act_data, colWidths=[2*inch, 1*inch, 2*inch])
-        ai_act_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 12),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black)
-        ]))
-        story.append(ai_act_table)
-        story.append(Spacer(1, 12))
-        
-        # Recommendations
-        story.append(Paragraph("Recommendations", styles['Heading2']))
-        recommendations = [
-            "Implement regular bias monitoring",
-            "Establish fairness thresholds",
-            "Document model decisions",
-            "Provide model explanations",
-            "Conduct regular compliance audits"
-        ]
-        
-        for i, rec in enumerate(recommendations, 1):
-            story.append(Paragraph("{}: {}".format(i, rec), styles['Normal']))
-        
-        # Build PDF
-        doc.build(story)
-        
+        try:
+            doc = SimpleDocTemplate(report_path, pagesize=letter)
+            styles = getSampleStyleSheet()
+            story = []
+            
+            # Title
+            title_style = ParagraphStyle(
+                'CustomTitle',
+                parent=styles['Heading1'],
+                fontSize=18,
+                spaceAfter=30,
+                alignment=1,  # Center alignment
+                textColor=colors.darkblue
+            )
+            story.append(Paragraph("Ethical AI Validator - Compliance Report", title_style))
+            story.append(Spacer(1, 15))
+            
+            # Report metadata
+            report_info_style = ParagraphStyle(
+                'ReportInfo',
+                parent=styles['Heading2'],
+                fontSize=14,
+                spaceAfter=12,
+                textColor=colors.darkblue
+            )
+            story.append(Paragraph("Report Information", report_info_style))
+            story.append(Paragraph("Generated: {}".format(datetime.now().strftime('%Y-%m-%d %H:%M:%S')), styles['Normal']))
+            story.append(Paragraph("Report ID: {}".format(timestamp), styles['Normal']))
+            story.append(Spacer(1, 15))
+            
+            # Model metadata
+            story.append(Paragraph("Model Information", report_info_style))
+            for key, value in metadata.items():
+                if key not in ['bias_report', 'fairness_metrics']:  # Skip complex objects
+                    story.append(Paragraph("{}: {}".format(key, value), styles['Normal']))
+            story.append(Spacer(1, 15))
+            
+            # Audit criteria
+            story.append(Paragraph("Audit Criteria", report_info_style))
+            criteria_data = [[key, str(value)] for key, value in audit_criteria.items()]
+            criteria_table = Table(criteria_data)
+            criteria_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 10),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+                ('TOPPADDING', (0, 0), (-1, 0), 8),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('LEFTPADDING', (0, 0), (-1, -1), 6),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 6)
+            ]))
+            story.append(criteria_table)
+            story.append(Spacer(1, 15))
+            
+            # Bias Analysis Section (if available)
+            if 'bias_report' in metadata and metadata['bias_report'] is not None:
+                story.append(Paragraph("Bias Analysis Results", report_info_style))
+                bias_report = metadata['bias_report']
+                if not bias_report.empty:
+                    bias_data = [["Protected Attribute", "Group", "Bias Score"]]
+                    for _, row in bias_report.iterrows():
+                        bias_data.append([
+                            row['protected_attribute'],
+                            row['group'],
+                            f"{row['bias_score']:.3f}"
+                        ])
+                    
+                    bias_table = Table(bias_data)
+                    bias_table.setStyle(TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('FONTSIZE', (0, 0), (-1, 0), 10),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+                        ('TOPPADDING', (0, 0), (-1, 0), 8),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+                        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+                        ('RIGHTPADDING', (0, 0), (-1, -1), 6)
+                    ]))
+                    story.append(bias_table)
+                    story.append(Spacer(1, 15))
+            
+            # Fairness Assessment Section (if available)
+            if 'fairness_metrics' in metadata and metadata['fairness_metrics'] is not None:
+                story.append(Paragraph("Fairness Assessment Results", report_info_style))
+                fairness_metrics = metadata['fairness_metrics']
+                if 'fairness_scores' in fairness_metrics:
+                    fairness_data = [["Protected Attribute", "Fairness Score"]]
+                    for attr_name, attr_metrics in fairness_metrics['fairness_scores'].items():
+                        fairness_score = attr_metrics.get('fairness_score', 0.0)
+                        fairness_data.append([attr_name, f"{fairness_score:.3f}"])
+                    
+                    fairness_table = Table(fairness_data)
+                    fairness_table.setStyle(TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('FONTSIZE', (0, 0), (-1, 0), 10),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+                        ('TOPPADDING', (0, 0), (-1, 0), 8),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+                        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+                        ('RIGHTPADDING', (0, 0), (-1, -1), 6)
+                    ]))
+                    story.append(fairness_table)
+                    story.append(Spacer(1, 15))
+            
+            # Overall Compliance Summary
+            story.append(Paragraph("Overall Compliance Summary", report_info_style))
+            
+            # Calculate overall compliance status
+            total_issues = 0
+            if 'bias_report' in metadata and metadata['bias_report'] is not None:
+                bias_report = metadata['bias_report']
+                if not bias_report.empty and 'bias_score' in bias_report.columns:
+                    max_bias = bias_report['bias_score'].max()
+                    has_bias_issues = max_bias > 0.1
+                    if has_bias_issues:
+                        total_issues += 1
+                else:
+                    has_bias_issues = False
+            else:
+                has_bias_issues = False
+            
+            if 'fairness_metrics' in metadata and metadata['fairness_metrics'] is not None:
+                fairness_metrics = metadata['fairness_metrics']
+                has_fairness_issues = False
+                if 'fairness_scores' in fairness_metrics:
+                    for attr_name, attr_metrics in fairness_metrics['fairness_scores'].items():
+                        fairness_score = attr_metrics.get('fairness_score', 1.0)
+                        if fairness_score < 0.8:
+                            has_fairness_issues = True
+                            break
+                if has_fairness_issues:
+                    total_issues += 1
+            else:
+                has_fairness_issues = False
+            
+            if total_issues == 0:
+                compliance_status = "FULLY COMPLIANT"
+                compliance_color = colors.green
+                summary_text = "All requirements met. Model demonstrates fair and unbiased behavior."
+            elif total_issues == 1:
+                compliance_status = "PARTIALLY COMPLIANT"
+                compliance_color = colors.orange
+                summary_text = "Minor issues detected. Some compliance requirements need attention."
+            else:
+                compliance_status = "NON-COMPLIANT"
+                compliance_color = colors.red
+                summary_text = "Significant issues detected. Immediate action required for compliance."
+            
+            # Create compliance summary table
+            summary_data = [
+                ["Overall Status", compliance_status],
+                ["Bias Issues", "Yes" if has_bias_issues else "No"],
+                ["Fairness Issues", "Yes" if has_fairness_issues else "No"],
+                ["Total Issues", str(total_issues)],
+                ["Summary", summary_text]
+            ]
+            
+            summary_table = Table(summary_data)
+            summary_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (0, 0), compliance_color),
+                ('TEXTCOLOR', (0, 0), (0, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('FONTNAME', (0, 0), (0, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, -1), 10),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+                ('TOPPADDING', (0, 0), (-1, -1), 8),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('LEFTPADDING', (0, 0), (-1, -1), 6),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 6)
+            ]))
+            story.append(summary_table)
+            story.append(Spacer(1, 15))
+            
+            # GDPR Compliance Section
+            story.append(Paragraph("GDPR Compliance Assessment", report_info_style))
+            gdpr_requirements = [
+                "Data Minimization",
+                "Purpose Limitation", 
+                "Transparency",
+                "Accountability",
+                "Right to Explanation"
+            ]
+            
+            # Assess GDPR compliance based on bias and fairness results
+            gdpr_data = [["Requirement", "Status", "Notes"]]
+            
+            # Check if bias analysis is available
+            has_bias_issues = False
+            if 'bias_report' in metadata and metadata['bias_report'] is not None:
+                bias_report = metadata['bias_report']
+                if not bias_report.empty and 'bias_score' in bias_report.columns:
+                    max_bias = bias_report['bias_score'].max()
+                    has_bias_issues = max_bias > 0.1  # Threshold for bias issues
+            
+            # Check fairness metrics
+            has_fairness_issues = False
+            if 'fairness_metrics' in metadata and metadata['fairness_metrics'] is not None:
+                fairness_metrics = metadata['fairness_metrics']
+                if 'fairness_scores' in fairness_metrics:
+                    for attr_name, attr_metrics in fairness_metrics['fairness_scores'].items():
+                        fairness_score = attr_metrics.get('fairness_score', 1.0)
+                        if fairness_score < 0.8:  # Threshold for fairness issues
+                            has_fairness_issues = True
+                            break
+            
+            # Determine compliance status
+            for req in gdpr_requirements:
+                if req == "Transparency" and has_bias_issues:
+                    gdpr_data.append([req, "Non-Compliant", "Bias detected - transparency compromised"])
+                elif req == "Accountability" and has_fairness_issues:
+                    gdpr_data.append([req, "Non-Compliant", "Fairness issues - accountability concerns"])
+                elif req == "Right to Explanation" and (has_bias_issues or has_fairness_issues):
+                    gdpr_data.append([req, "Non-Compliant", "Bias/fairness issues affect explainability"])
+                else:
+                    gdpr_data.append([req, "Compliant", "Audit completed successfully"])
+            
+            gdpr_table = Table(gdpr_data)
+            gdpr_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 10),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+                ('TOPPADDING', (0, 0), (-1, 0), 8),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('LEFTPADDING', (0, 0), (-1, -1), 6),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 6)
+            ]))
+            story.append(gdpr_table)
+            story.append(Spacer(1, 15))
+            
+            # AI Act Compliance Section
+            story.append(Paragraph("AI Act Compliance Assessment", report_info_style))
+            ai_act_requirements = [
+                "Risk Assessment",
+                "Transparency Requirements",
+                "Human Oversight",
+                "Accuracy Requirements",
+                "Documentation"
+            ]
+            
+            # Assess AI Act compliance based on bias and fairness results
+            ai_act_data = [["Requirement", "Status", "Notes"]]
+            
+            for req in ai_act_requirements:
+                if req == "Risk Assessment" and (has_bias_issues or has_fairness_issues):
+                    ai_act_data.append([req, "Non-Compliant", "Bias/fairness risks identified"])
+                elif req == "Transparency Requirements" and has_bias_issues:
+                    ai_act_data.append([req, "Non-Compliant", "Bias affects transparency"])
+                elif req == "Human Oversight" and (has_bias_issues or has_fairness_issues):
+                    ai_act_data.append([req, "Non-Compliant", "Bias/fairness issues require oversight"])
+                elif req == "Accuracy Requirements" and has_fairness_issues:
+                    ai_act_data.append([req, "Non-Compliant", "Fairness issues affect accuracy"])
+                elif req == "Documentation" and (has_bias_issues or has_fairness_issues):
+                    ai_act_data.append([req, "Non-Compliant", "Bias/fairness issues need documentation"])
+                else:
+                    ai_act_data.append([req, "Compliant", "Audit completed successfully"])
+            
+            ai_act_table = Table(ai_act_data)
+            ai_act_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 10),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+                ('TOPPADDING', (0, 0), (-1, 0), 8),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('LEFTPADDING', (0, 0), (-1, -1), 6),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 6)
+            ]))
+            story.append(ai_act_table)
+            story.append(Spacer(1, 15))
+            
+            # Recommendations
+            story.append(Paragraph("Recommendations", report_info_style))
+            
+            # Generate specific recommendations based on bias and fairness results
+            recommendations = []
+            
+            # Check bias issues
+            if 'bias_report' in metadata and metadata['bias_report'] is not None:
+                bias_report = metadata['bias_report']
+                if not bias_report.empty and 'bias_score' in bias_report.columns:
+                    max_bias = bias_report['bias_score'].max()
+                    if max_bias > 0.3:
+                        recommendations.append("CRITICAL: Implement immediate bias mitigation strategies")
+                        recommendations.append("Consider retraining model with fairness-aware algorithms")
+                    elif max_bias > 0.1:
+                        recommendations.append("HIGH PRIORITY: Apply post-processing bias correction")
+                        recommendations.append("Implement equalized odds post-processing")
+            
+            # Check fairness issues
+            if 'fairness_metrics' in metadata and metadata['fairness_metrics'] is not None:
+                fairness_metrics = metadata['fairness_metrics']
+                if 'fairness_scores' in fairness_metrics:
+                    for attr_name, attr_metrics in fairness_metrics['fairness_scores'].items():
+                        fairness_score = attr_metrics.get('fairness_score', 1.0)
+                        if fairness_score < 0.7:
+                            recommendations.append(f"URGENT: Address fairness issues in {attr_name}")
+                            recommendations.append("Implement demographic parity constraints")
+                        elif fairness_score < 0.8:
+                            recommendations.append(f"MEDIUM: Monitor fairness in {attr_name}")
+            
+            # Add general recommendations if no specific issues found
+            if not recommendations:
+                recommendations = [
+                    "Implement regular bias monitoring",
+                    "Establish fairness thresholds",
+                    "Document model decisions",
+                    "Provide model explanations",
+                    "Conduct regular compliance audits"
+                ]
+            else:
+                # Add general best practices
+                recommendations.extend([
+                    "Implement comprehensive bias monitoring in production",
+                    "Document all mitigation strategies implemented",
+                    "Establish regular bias monitoring procedures",
+                    "Provide model explanations for affected groups",
+                    "Consider human oversight for high-stakes decisions"
+                ])
+            
+            for i, rec in enumerate(recommendations, 1):
+                story.append(Paragraph("{}: {}".format(i, rec), styles['Normal']))
+            
+            # Build PDF
+            doc.build(story)
+        except Exception as e:
+            raise IOError(f"Failed to save PDF report to '{report_path}': {e}")
         return report_path
     
     def monitor_realtime(
@@ -840,7 +1089,7 @@ def calculate_fairness_metrics(predictions, protected_attributes):
     return validator.calculate_fairness_metrics(predictions, protected_attributes)
 
 
-def generate_compliance_report(metadata, audit_criteria):
+def generate_compliance_report(metadata, audit_criteria, output_path=None):
     """
     Convenience function for FR-003: Compliance report generation.
     
@@ -850,6 +1099,7 @@ def generate_compliance_report(metadata, audit_criteria):
     Args:
         metadata (dict): Model and audit metadata
         audit_criteria (dict): Audit criteria and thresholds
+        output_path (str, optional): Path (including filename) to save the PDF report. If not provided, saves to current directory with a timestamped name.
     
     Returns:
         str: Path to generated PDF report
@@ -857,7 +1107,7 @@ def generate_compliance_report(metadata, audit_criteria):
     Author: WHIS (muhammadabdullahinbox@gmail.com)
     """
     validator = EthicalAIValidator()
-    return validator.generate_compliance_report(metadata, audit_criteria)
+    return validator.generate_compliance_report(metadata, audit_criteria, output_path=output_path)
 
 
 def monitor_realtime(predictions_stream):

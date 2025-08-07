@@ -40,7 +40,7 @@ def read_requirements():
 
 setup(
     name="whis-ethical-ai",
-    version="1.0.0",
+    version="1.1.0",
     author="Ethical AI Team",
     author_email="muhammadabdullahinbox@gmail.com",
     description="Comprehensive ethical AI validation and auditing package",
