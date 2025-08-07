@@ -780,40 +780,48 @@ monitor = validator.monitor_realtime(
     </div>
 
     <script>
-        // List your PDF reports here (GitHub raw URLs)
-        const pdfReports = [
-            {
-                name: "Random Forest (Aggressive)",
-                url: "https://github.com/yourusername/yourrepo/raw/main/example_reports/Random_Forest_aggressive_compliance_report.pdf"
-            },
-            {
-                name: "Logistic Regression (Aggressive)",
-                url: "https://github.com/yourusername/yourrepo/raw/main/example_reports/Logistic_Regression_aggressive_compliance_report.pdf"
-            },
-            {
-                name: "Support Vector Machine (Aggressive)",
-                url: "https://github.com/yourusername/yourrepo/raw/main/example_reports/Support_Vector_Machine_aggressive_compliance_report.pdf"
-            },
-            // Add more reports as needed, following the same pattern
-        ];
+        const githubApiUrl = "https://api.github.com/repos/whis-19/ethical-ai/contents/example_reports";
+        const githubRawBase = "https://github.com/whis-19/ethical-ai/raw/main/example_reports/";
 
-        function showReportsModal() {
+        async function fetchPdfReports() {
+            const response = await fetch(githubApiUrl);
+            if (!response.ok) {
+                alert("Failed to fetch PDF list from GitHub.");
+                return [];
+            }
+            const files = await response.json();
+            // Only include PDFs
+            return files
+                .filter(file => file.type === "file" && file.name.toLowerCase().endsWith(".pdf"))
+                .map(file => ({
+                    name: file.name.replace(/_/g, ' ').replace(/\.pdf$/i, '').replace(/compliance report/i, 'Compliance Report'),
+                    url: githubRawBase + file.name
+                }));
+        }
+
+        async function showReportsModal() {
             document.getElementById('reportsModal').style.display = 'flex';
             const list = document.getElementById('pdfList');
+            list.innerHTML = '<li>Loading...</li>';
+            const pdfReports = await fetchPdfReports();
             list.innerHTML = '';
-            pdfReports.forEach((report, idx) => {
-                const li = document.createElement('li');
-                li.style.margin = '8px 0';
-                const link = document.createElement('a');
-                link.href = '#';
-                link.textContent = report.name;
-                link.onclick = (e) => {
-                    e.preventDefault();
-                    showPdfInViewer(report.url);
-                };
-                li.appendChild(link);
-                list.appendChild(li);
-            });
+            if (pdfReports.length === 0) {
+                list.innerHTML = '<li>No PDF reports found.</li>';
+            } else {
+                pdfReports.forEach((report, idx) => {
+                    const li = document.createElement('li');
+                    li.style.margin = '8px 0';
+                    const link = document.createElement('a');
+                    link.href = '#';
+                    link.textContent = report.name;
+                    link.onclick = (e) => {
+                        e.preventDefault();
+                        showPdfInViewer(report.url);
+                    };
+                    li.appendChild(link);
+                    list.appendChild(li);
+                });
+            }
             document.getElementById('pdfViewerContainer').style.display = 'none';
         }
 
