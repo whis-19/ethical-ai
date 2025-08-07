@@ -254,8 +254,9 @@
             background: var(--bg-secondary);
             border: 2px solid var(--border);
             border-radius: 6px;
-            padding: 20px;
+            padding: 25px;
             margin-top: 20px;
+            min-height: 150px; /* Increased size to fit longer email */
         }
         .contact-info h4 {
             color: var(--text-primary);
@@ -264,12 +265,20 @@
         }
         .contact-info p {
             color: var(--text-secondary);
-            margin: 5px 0;
+            margin: 10px 0;
             text-align: left;
+            word-break: break-word; /* Ensures email wraps if too long */
         }
         .contact-info p strong {
             font-weight: 500;
             margin-right: 10px;
+        }
+        .contact-info a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .contact-info a:hover {
+            text-decoration: underline;
         }
         .footer {
             text-align: center;
@@ -294,6 +303,7 @@
             }
             .contact-info {
                 padding: 15px;
+                min-height: 180px; /* Adjusted for mobile */
             }
             .contact-info p {
                 font-size: 0.9rem;
@@ -409,7 +419,7 @@ print("Bias Report:")
 print(bias_report)</pre>
                 </div>
                 <h2 id="core-functionality">Core Functionality</h2>
-                <h3>Bias Detection (FR-001)</h3>
+                <h3>Bias Detection</h3>
                 <p>The package implements sophisticated bias detection algorithms that analyze model predictions across
                     different protected attributes:</p>
                 <ul>
@@ -420,7 +430,7 @@ print(bias_report)</pre>
                     <li><strong>Individual Fairness:</strong> Evaluates consistency in predictions for similar
                         individuals</li>
                 </ul>
-                <h3>Fairness Metrics (FR-002)</h3>
+                <h3>Fairness Metrics</h3>
                 <p>Comprehensive fairness assessment with multiple metrics:</p>
                 <table class="table">
                     <thead>
@@ -453,7 +463,7 @@ print(bias_report)</pre>
                         </tr>
                     </tbody>
                 </table>
-                <h3>Compliance Reporting (FR-003)</h3>
+                <h3>Compliance Reporting</h3>
                 <div class="info-box">
                     <strong>GDPR Compliance:</strong> Ensures data protection, right to explanation, and automated
                     decision-making transparency.
@@ -462,7 +472,7 @@ print(bias_report)</pre>
                     <strong>AI Act Compliance:</strong> Validates high-risk AI system requirements including bias
                     assessment and documentation.
                 </div>
-                <h3>Real-time Monitoring (FR-004)</h3>
+                <h3>Real-time Monitoring</h3>
                 <p>Continuous monitoring capabilities with automated alerts:</p>
                 <ul>
                     <li>Real-time bias detection in production models</li>
@@ -470,7 +480,7 @@ print(bias_report)</pre>
                     <li>Performance tracking over time</li>
                     <li>Drift detection in model behavior</li>
                 </ul>
-                <h3>Mitigation Suggestions (FR-005)</h3>
+                <h3>Mitigation Suggestions</h3>
                 <p>Intelligent recommendations for bias mitigation:</p>
                 <ul>
                     <li>Data preprocessing strategies</li>
@@ -569,7 +579,7 @@ monitor = validator.monitor_realtime(
                 </ul>
                 <div class="contact-info">
                     <h4>Contact</h4>
-                    <p><strong>Email:</strong> muhammadabdullahinbox@gmail.com</p>
+                    <p><strong>Email:</strong> <a href="mailto:muhammadabdullahinbox@gmail.com">muhammadabdullahinbox@gmail.com</a></p>
                     <p><strong>Author:</strong> WHIS</p>
                     <p><strong>Version:</strong> 1.0.0</p>
                 </div>
