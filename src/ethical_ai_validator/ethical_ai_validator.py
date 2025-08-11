@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """
 Ethical AI Validator - Core Implementation
 
@@ -19,7 +20,7 @@ Functional Requirements:
 - FR-005: Mitigation suggestions for bias reduction
 
 Author: WHIS (muhammadabdullahinbox@gmail.com)
-Version: 1.1.0
+Version: 1.3.0
 License: MIT
 Repository: https://github.com/whis-19/ethical-ai
 Documentation: https://whis-19.github.io/ethical-ai/
@@ -30,10 +31,12 @@ import time
 from datetime import datetime
 import warnings
 
+from typing import Any, Dict, List, Optional
 import pandas as pd
 import numpy as np
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.preprocessing import LabelEncoder
+from sklearn.base import clone
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -63,7 +66,7 @@ class EthicalAIValidator(object):
         >>> compliance_report = validator.generate_compliance_report(metadata, criteria)
     
     Author: WHIS (muhammadabdullahinbox@gmail.com)
-    Version: 1.1.0
+    Version: 1.3.0
     """
     
     def __init__(self, config=None):
@@ -107,7 +110,14 @@ class EthicalAIValidator(object):
         # Store monitoring history for real-time analysis
         self.monitoring_history = []
         
-        self.version = '1.1.0'
+        self.version = '1.3.0'
+
+    @staticmethod
+    def _safe_float(value: Any) -> float:
+        try:
+            return float(value) if value is not None else 0.0
+        except Exception:
+            return 0.0
         
     def audit_bias(
         self, 
@@ -361,6 +371,243 @@ class EthicalAIValidator(object):
                 }
         
         return fairness_results
+
+    def compute_feature_disparities(
+        self,
+        model,
+        X: pd.DataFrame,
+        protected_attributes: dict,
+        max_features: int = 10,
+        sample_size: int = 1000
+    ) -> dict:
+        """
+        Compute feature contribution disparities across protected attribute groups.
+
+        Attempts to use SHAP if available; falls back to importance-weighted
+        group mean differences when SHAP is not installed.
+        """
+        results: dict = {}
+        # Convert X to DataFrame if possible
+        if not isinstance(X, pd.DataFrame):
+            try:
+                X = pd.DataFrame(X)
+            except Exception:
+                return results
+
+        # Prepare SHAP explainer if available
+        shap_values = None
+        feature_names = list(X.columns)
+        try:
+            import shap  # type: ignore
+            shap_sample = X.sample(min(len(X), sample_size), random_state=42)
+            try:
+                explainer = shap.Explainer(model, shap_sample)
+            except Exception:
+                explainer = shap.TreeExplainer(model)
+            shap_values = explainer(shap_sample)
+            if hasattr(shap_values, 'values'):
+                values = shap_values.values
+            else:
+                # Newer SHAP returns .values as numpy, else is array-like
+                values = np.array(shap_values)
+            # values shape: (n_samples, n_features)
+            shap_abs = np.abs(values)
+            shap_df = pd.DataFrame(shap_abs, index=shap_sample.index)
+            try:
+                shap_df.columns = pd.Index([str(c) for c in feature_names])
+            except Exception:
+                pass
+        except Exception:
+            shap_df = None
+
+        # For each protected attribute, compute disparities
+        for attr_name, attr_values in protected_attributes.items():
+            try:
+                groups = pd.Series(attr_values, index=X.index)
+                group_names = groups.unique()
+                if len(group_names) < 2:
+                    continue
+                disparities = []
+                if shap_df is not None:
+                    # Use mean absolute SHAP per group
+                    group_means = {g: pd.Series(shap_df[groups == g].mean()) for g in group_names}
+                    for feat in feature_names:
+                        top_group, bottom_group = None, None
+                        max_mean, min_mean = -1.0, float('inf')
+                        for g, series in group_means.items():
+                            if isinstance(series, pd.Series):
+                                val_raw = series.get(feat, 0.0)
+                            else:
+                                val_raw = 0.0
+                            val = self._safe_float(val_raw)
+                            if val > max_mean:
+                                max_mean, top_group = val, g
+                            if val < min_mean:
+                                min_mean, bottom_group = val, g
+                        disparity = max_mean - min_mean
+                        disparities.append({
+                            'feature': feat,
+                            'disparity': disparity,
+                            'top_group': top_group,
+                            'bottom_group': bottom_group
+                        })
+                else:
+                    # Fallback: importance-weighted group mean absolute value
+                    # Get feature importances or coefficients
+                    try:
+                        importances = getattr(model, 'feature_importances_', None)
+                        if importances is None:
+                            coef = getattr(model, 'coef_', None)
+                            if coef is not None:
+                                importances = np.mean(np.abs(coef), axis=0)
+                        if importances is None:
+                            importances = np.ones(len(feature_names))
+                        importance_series = pd.Series(importances, index=feature_names)
+                    except Exception:
+                        importance_series = pd.Series(np.ones(len(feature_names)), index=feature_names)
+                    group_means = {g: pd.Series(X.loc[groups == g].abs().mean()) for g in group_names}
+                    for feat in feature_names:
+                        top_group, bottom_group = None, None
+                        max_mean, min_mean = -1.0, float('inf')
+                        for g, series in group_means.items():
+                            if isinstance(series, pd.Series):
+                                base_raw = series.get(feat, 0.0)
+                            else:
+                                base_raw = 0.0
+                            base_val = self._safe_float(base_raw)
+                            imp_raw = importance_series.get(feat, 1.0) if isinstance(importance_series, pd.Series) else 1.0
+                            imp_val = self._safe_float(imp_raw)
+                            val = base_val * imp_val
+                            if val > max_mean:
+                                max_mean, top_group = val, g
+                            if val < min_mean:
+                                min_mean, bottom_group = val, g
+                        disparity = max_mean - min_mean
+                        disparities.append({
+                            'feature': feat,
+                            'disparity': disparity,
+                            'top_group': top_group,
+                            'bottom_group': bottom_group
+                        })
+                # Keep top features
+                disparities = sorted(disparities, key=lambda d: d['disparity'], reverse=True)[:max_features]
+                results[attr_name] = disparities
+            except Exception:
+                continue
+        return results
+
+    def hyperparameter_ablation(
+        self,
+        model,
+        X_train: pd.DataFrame,
+        y_train: pd.Series,
+        X_test: pd.DataFrame,
+        y_test: pd.Series,
+        protected_attributes: dict,
+        params_to_probe: Optional[List[str]] = None,
+        max_variants_per_param: int = 2
+    ) -> Dict[str, Any]:
+        """
+        Empirically estimate each hyperparameter's impact on fairness via ablation.
+
+        For each selected hyperparameter, train a few close variants and evaluate
+        average fairness score. Returns deltas relative to baseline.
+        """
+        try:
+            base_params = getattr(model, 'get_params', lambda: {})()
+            model_cls = model.__class__
+        except Exception:
+            return {}
+
+        # Compute baseline fairness
+        try:
+            base_predictions = model.predict(X_test)
+        except Exception:
+            return {}
+        baseline_fair = self.calculate_fairness_metrics(
+            predictions=base_predictions,
+            protected_attributes=protected_attributes
+        )
+        def avg_fair(fs: dict) -> float:
+            if not isinstance(fs, dict) or 'fairness_scores' not in fs:
+                return 0.0
+            vals = [m.get('fairness_score', 0.0) for m in fs['fairness_scores'].values()]
+            return float(np.mean(vals)) if vals else 0.0
+        baseline_avg = avg_fair(baseline_fair)
+
+        # Choose parameters to probe
+        default_probe = [
+            'max_depth', 'min_samples_split', 'min_samples_leaf', 'n_estimators',
+            'C', 'kernel', 'hidden_layer_sizes', 'alpha', 'learning_rate', 'class_weight'
+        ]
+        probe_list = [p for p in (params_to_probe or default_probe) if p in base_params]
+
+        impacts = []
+        for param in probe_list:
+            val = base_params[param]
+            variants = []
+            try:
+                if isinstance(val, (int, float)):
+                    # Build nearby numeric variants
+                    candidates = sorted(set([
+                        val,
+                        max(1, int(val * 0.5)) if isinstance(val, int) else val * 0.5,
+                        int(val * 2) if isinstance(val, int) else val * 2
+                    ]))
+                    variants = [v for v in candidates if v != val][:max_variants_per_param]
+                elif isinstance(val, (list, tuple)) and all(isinstance(x, (int, float)) for x in val):
+                    # Scale layer sizes
+                    half = tuple(max(1, int(x * 0.5)) for x in val)
+                    double = tuple(int(x * 2) for x in val)
+                    variants = [half, double][:max_variants_per_param]
+                elif isinstance(val, str) and param == 'kernel':
+                    alt = ['linear', 'rbf', 'poly']
+                    variants = [k for k in alt if k != val][:max_variants_per_param]
+                else:
+                    continue
+            except Exception:
+                continue
+
+            for v in variants:
+                try:
+                    variant_params = dict(base_params)
+                    variant_params[param] = v
+                    variant_model = clone(model_cls(**variant_params))
+                    variant_model.fit(X_train, y_train)
+                    preds = variant_model.predict(X_test)
+                    fair = self.calculate_fairness_metrics(
+                        predictions=preds,
+                        protected_attributes=protected_attributes
+                    )
+                    avg_score = avg_fair(fair)
+                    impacts.append({
+                        'parameter': param,
+                        'value': v,
+                        'avg_fairness': avg_score,
+                        'delta_vs_baseline': avg_score - baseline_avg
+                    })
+                except Exception:
+                    continue
+
+        # Aggregate by parameter
+        summary = {}
+        for item in impacts:
+            p = item['parameter']
+            summary.setdefault(p, {'worst_delta': 1.0, 'best_delta': -1.0, 'samples': 0})
+            summary[p]['worst_delta'] = min(summary[p]['worst_delta'], item['delta_vs_baseline'])
+            summary[p]['best_delta'] = max(summary[p]['best_delta'], item['delta_vs_baseline'])
+            summary[p]['samples'] += 1
+
+        ranked = sorted(
+            [{'parameter': p, **m} for p, m in summary.items()],
+            key=lambda x: x['worst_delta']
+        )
+
+        return {
+            'baseline_avg_fairness': baseline_avg,
+            'impacts': impacts,
+            'summary': ranked
+        }
     
     def generate_compliance_report(
         self, 
@@ -480,8 +727,38 @@ class EthicalAIValidator(object):
             # Model metadata
             story.append(Paragraph("Model Information", report_info_style))
             for key, value in metadata.items():
-                if key not in ['bias_report', 'fairness_metrics']:  # Skip complex objects
+                if key not in ['bias_report', 'fairness_metrics', 'hyperparameters', 'scenario', 'scenario_name']:  # Skip complex/duplicated
                     story.append(Paragraph("{}: {}".format(key, value), styles['Normal']))
+            story.append(Spacer(1, 15))
+
+            # Training Scenario and Hyperparameters
+            scenario_value = metadata.get('scenario') or metadata.get('scenario_name') or 'N/A'
+            hyperparams = metadata.get('hyperparameters') or {}
+            story.append(Paragraph("Training Scenario and Hyperparameters", report_info_style))
+            story.append(Paragraph("Scenario: {}".format(scenario_value), styles['Normal']))
+            if isinstance(hyperparams, dict) and hyperparams:
+                hp_data = [["Hyperparameter", "Value"]]
+                for k in sorted(hyperparams.keys(), key=lambda x: str(x)):
+                    v = hyperparams[k]
+                    hp_data.append([str(k), str(v)])
+                hp_table = Table(hp_data)
+                hp_table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, 0), 10),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+                    ('TOPPADDING', (0, 0), (-1, 0), 8),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                    ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                    ('LEFTPADDING', (0, 0), (-1, -1), 6),
+                    ('RIGHTPADDING', (0, 0), (-1, -1), 6)
+                ]))
+                story.append(hp_table)
+            else:
+                story.append(Paragraph("Hyperparameters: N/A", styles['Normal']))
             story.append(Spacer(1, 15))
             
             # Audit criteria
@@ -505,6 +782,21 @@ class EthicalAIValidator(object):
             story.append(criteria_table)
             story.append(Spacer(1, 15))
             
+            # Resolve thresholds (from audit_criteria -> config -> defaults)
+            bias_threshold = 0.1
+            fairness_threshold = 0.8
+            try:
+                if isinstance(audit_criteria, dict):
+                    bias_threshold = float(audit_criteria.get('bias_threshold', bias_threshold))
+                    fairness_threshold = float(audit_criteria.get('fairness_threshold', fairness_threshold))
+            except Exception:
+                pass
+            try:
+                bias_threshold = float(self.config.get('bias_threshold', bias_threshold))
+                fairness_threshold = float(self.config.get('fairness_threshold', fairness_threshold))
+            except Exception:
+                pass
+
             # Bias Analysis Section (if available)
             if 'bias_report' in metadata and metadata['bias_report'] is not None:
                 story.append(Paragraph("Bias Analysis Results", report_info_style))
@@ -563,7 +855,172 @@ class EthicalAIValidator(object):
                     ]))
                     story.append(fairness_table)
                     story.append(Spacer(1, 15))
+
+            # Feature Contribution Disparities (optional)
+            if 'feature_disparities' in metadata and metadata['feature_disparities']:
+                story.append(Paragraph("Feature Contribution Disparities (by protected attribute)", report_info_style))
+                feature_disp = metadata['feature_disparities']
+                for attr_name, items in feature_disp.items():
+                    story.append(Paragraph(f"Attribute: {attr_name}", styles['Heading3']))
+                    data = [["Feature", "Disparity", "Top Group", "Bottom Group"]]
+                    for item in items:
+                        data.append([
+                            str(item.get('feature')),
+                            f"{float(item.get('disparity', 0.0)):.3f}",
+                            str(item.get('top_group')),
+                            str(item.get('bottom_group'))
+                        ])
+                    table = Table(data)
+                    table.setStyle(TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('FONTSIZE', (0, 0), (-1, 0), 10),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+                        ('TOPPADDING', (0, 0), (-1, 0), 8),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                        ('GRID', (0, 0), (-1, -1), 0.5, colors.black)
+                    ]))
+                    story.append(table)
+                    story.append(Spacer(1, 10))
             
+            # Hyperparameter Impact Analysis
+            def _analyze_hyperparameters(hp: dict, fairness: dict) -> list:
+                analysis = []
+                if not isinstance(hp, dict) or not hp:
+                    return analysis
+                # Helper to add finding
+                def add(name, value, risk, rationale):
+                    analysis.append({
+                        'parameter': name,
+                        'value': value,
+                        'risk': risk,
+                        'rationale': rationale
+                    })
+                # Fairness context
+                worst_fairness = 1.0
+                if isinstance(fairness, dict) and 'fairness_scores' in fairness:
+                    for scores in fairness['fairness_scores'].values():
+                        fs = scores.get('fairness_score', 1.0)
+                        if fs < worst_fairness:
+                            worst_fairness = fs
+                fairness_is_weak = worst_fairness < 0.8
+
+                # Tree-based
+                max_depth = hp.get('max_depth')
+                if isinstance(max_depth, (int, float)) and max_depth and max_depth > 12:
+                    add('max_depth', max_depth, 'HIGH', 'Deep trees can overfit biased patterns; consider lower depth.')
+                min_samples_split = hp.get('min_samples_split')
+                if isinstance(min_samples_split, (int, float)) and min_samples_split and min_samples_split < 3:
+                    add('min_samples_split', min_samples_split, 'MEDIUM', 'Very small splits may fragment minority groups.')
+                min_samples_leaf = hp.get('min_samples_leaf')
+                if isinstance(min_samples_leaf, (int, float)) and min_samples_leaf and min_samples_leaf < 2:
+                    add('min_samples_leaf', min_samples_leaf, 'MEDIUM', 'Tiny leaves can produce unstable decisions for small groups.')
+                n_estimators = hp.get('n_estimators')
+                if isinstance(n_estimators, (int, float)) and n_estimators and n_estimators > 300 and fairness_is_weak:
+                    add('n_estimators', n_estimators, 'LOW', 'Very large ensembles may amplify existing signal imbalances.')
+
+                # Linear / SVM
+                C = hp.get('C')
+                if isinstance(C, (int, float)) and C and C > 5:
+                    add('C', C, 'HIGH', 'High C reduces regularization; can overfit biased correlations.')
+                kernel = hp.get('kernel')
+                if isinstance(kernel, str) and kernel in ['rbf', 'poly'] and fairness_is_weak:
+                    add('kernel', kernel, 'LOW', 'Non-linear kernels may fit spurious group-specific patterns.')
+
+                # Neural networks
+                hidden = hp.get('hidden_layer_sizes')
+                if isinstance(hidden, (list, tuple)) and sum(hidden) > 200:
+                    add('hidden_layer_sizes', hidden, 'MEDIUM', 'Large capacity networks can overfit demographic correlations.')
+                alpha = hp.get('alpha')
+                if isinstance(alpha, (int, float)) and alpha and alpha < 0.001:
+                    add('alpha', alpha, 'MEDIUM', 'Very low regularization may worsen group disparities.')
+
+                # Boosting
+                learning_rate = hp.get('learning_rate')
+                if isinstance(learning_rate, (int, float)) and learning_rate and learning_rate > 0.2:
+                    add('learning_rate', learning_rate, 'HIGH', 'High learning rate leads to unstable fits, harming minority groups.')
+
+                # Class weights
+                class_weight = hp.get('class_weight')
+                if class_weight in [None, 'None'] and fairness_is_weak:
+                    add('class_weight', class_weight, 'LOW', 'No class weighting can under-serve minority groups if data is imbalanced.')
+
+                return analysis
+
+            hp_findings = _analyze_hyperparameters(hyperparams, metadata.get('fairness_metrics') or {})
+            if hp_findings:
+                story.append(Paragraph("Hyperparameter Impact Analysis", report_info_style))
+                impact_data = [["Parameter", "Value", "Risk", "Rationale"]]
+                for item in hp_findings:
+                    impact_data.append([
+                        str(item['parameter']),
+                        str(item['value']),
+                        str(item['risk']),
+                        str(item['rationale'])
+                    ])
+                impact_table = Table(impact_data)
+                impact_table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, 0), 10),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+                    ('TOPPADDING', (0, 0), (-1, 0), 8),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                    ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                    ('LEFTPADDING', (0, 0), (-1, -1), 6),
+                    ('RIGHTPADDING', (0, 0), (-1, -1), 6)
+                ]))
+                story.append(impact_table)
+                story.append(Spacer(1, 15))
+
+            # Likely Contributing Factors
+            def _infer_contributing_factors() -> list:
+                factors = []
+                # Inputs
+                bias_df = metadata.get('bias_report')
+                fairness = metadata.get('fairness_metrics') or {}
+                hp = hyperparams
+                # From metrics
+                worst_attr = None
+                worst_fairness = 1.0
+                if isinstance(fairness, dict) and 'fairness_scores' in fairness:
+                    for attr_name, scores in fairness['fairness_scores'].items():
+                        fs = scores.get('fairness_score', 1.0)
+                        if fs < worst_fairness:
+                            worst_fairness = fs
+                            worst_attr = attr_name
+                if worst_attr is not None:
+                    factors.append(
+                        f"Low fairness score observed for '{worst_attr}' (score={worst_fairness:.3f})."
+                    )
+                if bias_df is not None and hasattr(bias_df, 'empty') and not bias_df.empty:
+                    try:
+                        row = bias_df.loc[bias_df['bias_score'].idxmax()]
+                        factors.append(
+                            f"Highest bias in {row['protected_attribute']} -> {row['group']} (bias_score={row['bias_score']:.3f})."
+                        )
+                    except Exception:
+                        pass
+                # From hyperparameters heuristics
+                if isinstance(hp, dict) and hp:
+                    # Refer to the analysis table to extract top suspects
+                    suspects = [f"{it['parameter']}={it['value']} ({it['risk']}) - {it['rationale']}" for it in hp_findings[:3]]
+                    if suspects:
+                        factors.append("Suspected hyperparameters: " + "; ".join(suspects))
+                if not factors:
+                    factors.append("No clear contributing factors identified from provided data.")
+                return factors
+
+            story.append(Paragraph("Likely Contributing Factors", report_info_style))
+            for i, factor in enumerate(_infer_contributing_factors(), 1):
+                story.append(Paragraph(f"{i}. {factor}", styles['Normal']))
+            story.append(Spacer(1, 15))
+
             # Overall Compliance Summary
             story.append(Paragraph("Overall Compliance Summary", report_info_style))
             
@@ -573,7 +1030,7 @@ class EthicalAIValidator(object):
                 bias_report = metadata['bias_report']
                 if not bias_report.empty and 'bias_score' in bias_report.columns:
                     max_bias = bias_report['bias_score'].max()
-                    has_bias_issues = max_bias > 0.1
+                    has_bias_issues = max_bias > bias_threshold
                     if has_bias_issues:
                         total_issues += 1
                 else:
@@ -587,7 +1044,7 @@ class EthicalAIValidator(object):
                 if 'fairness_scores' in fairness_metrics:
                     for attr_name, attr_metrics in fairness_metrics['fairness_scores'].items():
                         fairness_score = attr_metrics.get('fairness_score', 1.0)
-                        if fairness_score < 0.8:
+                        if fairness_score < fairness_threshold:
                             has_fairness_issues = True
                             break
                 if has_fairness_issues:
@@ -654,7 +1111,7 @@ class EthicalAIValidator(object):
                 bias_report = metadata['bias_report']
                 if not bias_report.empty and 'bias_score' in bias_report.columns:
                     max_bias = bias_report['bias_score'].max()
-                    has_bias_issues = max_bias > 0.1  # Threshold for bias issues
+                    has_bias_issues = max_bias > bias_threshold  # Threshold for bias issues
             
             # Check fairness metrics
             has_fairness_issues = False
@@ -663,7 +1120,7 @@ class EthicalAIValidator(object):
                 if 'fairness_scores' in fairness_metrics:
                     for attr_name, attr_metrics in fairness_metrics['fairness_scores'].items():
                         fairness_score = attr_metrics.get('fairness_score', 1.0)
-                        if fairness_score < 0.8:  # Threshold for fairness issues
+                        if fairness_score < fairness_threshold:  # Threshold for fairness issues
                             has_fairness_issues = True
                             break
             
@@ -752,10 +1209,10 @@ class EthicalAIValidator(object):
                 bias_report = metadata['bias_report']
                 if not bias_report.empty and 'bias_score' in bias_report.columns:
                     max_bias = bias_report['bias_score'].max()
-                    if max_bias > 0.3:
+                    if max_bias > max(bias_threshold * 3.0, bias_threshold + 0.15):
                         recommendations.append("CRITICAL: Implement immediate bias mitigation strategies")
                         recommendations.append("Consider retraining model with fairness-aware algorithms")
-                    elif max_bias > 0.1:
+                    elif max_bias > bias_threshold:
                         recommendations.append("HIGH PRIORITY: Apply post-processing bias correction")
                         recommendations.append("Implement equalized odds post-processing")
             
@@ -765,10 +1222,10 @@ class EthicalAIValidator(object):
                 if 'fairness_scores' in fairness_metrics:
                     for attr_name, attr_metrics in fairness_metrics['fairness_scores'].items():
                         fairness_score = attr_metrics.get('fairness_score', 1.0)
-                        if fairness_score < 0.7:
+                        if fairness_score < max(0.0, fairness_threshold - 0.1):
                             recommendations.append(f"URGENT: Address fairness issues in {attr_name}")
                             recommendations.append("Implement demographic parity constraints")
-                        elif fairness_score < 0.8:
+                        elif fairness_score < fairness_threshold:
                             recommendations.append(f"MEDIUM: Monitor fairness in {attr_name}")
             
             # Add general recommendations if no specific issues found

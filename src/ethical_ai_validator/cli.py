@@ -9,7 +9,7 @@ The CLI supports various input formats and provides comprehensive audit
 capabilities with configurable parameters and output options.
 
 Author: WHIS (muhammadabdullahinbox@gmail.com)
-Version: 1.0.0
+Version: 1.3.0
 Repository: https://github.com/whis-19/ethical-ai
 Documentation: https://whis-19.github.io/ethical-ai/
 """
@@ -50,7 +50,7 @@ def main() -> int:
     parser.add_argument(
         "--version",
         action="version",
-        version="ethical-ai-validator 0.1.0"
+        version="ethical-ai-validator 1.3.0"
     )
     
     parser.add_argument(
@@ -63,6 +63,18 @@ def main() -> int:
         "--output",
         type=str,
         help="Output path for audit report"
+    )
+    parser.add_argument(
+        "--scenario",
+        type=str,
+        default=None,
+        help="Training scenario name/description to include in output"
+    )
+    parser.add_argument(
+        "--hyperparameters",
+        type=str,
+        default=None,
+        help="Model hyperparameters as JSON string to include in output"
     )
     
     parser.add_argument(
@@ -80,16 +92,75 @@ def main() -> int:
         if args.verbose:
             print("Ethical AI Validator initialized successfully")
         
-        # For now, just print a message
-        # In a real implementation, this would load data and run audits
+        # Parse optional hyperparameters JSON
+        hp_dict = {}
+        if args.hyperparameters:
+            try:
+                import json as _json
+                hp_dict = _json.loads(args.hyperparameters)
+                if not isinstance(hp_dict, dict):
+                    hp_dict = {"value": hp_dict}
+            except Exception:
+                hp_dict = {"raw": args.hyperparameters}
+
         print("Ethical AI Validator CLI")
         print("=========================")
-        print("This is a placeholder CLI implementation.")
-        print("In a full implementation, this would:")
-        print("- Load model and data from command line arguments")
-        print("- Run comprehensive audit")
-        print("- Generate detailed report")
-        print("- Save results to specified output path")
+        if args.scenario:
+            print(f"Scenario: {args.scenario}")
+        if hp_dict:
+            print("Hyperparameters:")
+            for k, v in hp_dict.items():
+                print(f"  - {k}: {v}")
+
+        # Print simple hyperparameter impact hints
+        def _cli_analyze_hp(hp: dict):
+            hints = []
+            if not isinstance(hp, dict):
+                return hints
+            md = hp.get('max_depth')
+            if isinstance(md, (int, float)) and md and md > 12:
+                hints.append("max_depth: HIGH risk for overfitting biased patterns")
+            mss = hp.get('min_samples_split')
+            if isinstance(mss, (int, float)) and mss and mss < 3:
+                hints.append("min_samples_split: MEDIUM risk for fragmenting minority groups")
+            C = hp.get('C')
+            if isinstance(C, (int, float)) and C and C > 5:
+                hints.append("C: HIGH risk due to low regularization")
+            lr = hp.get('learning_rate')
+            if isinstance(lr, (int, float)) and lr and lr > 0.2:
+                hints.append("learning_rate: HIGH risk due to unstable training")
+            hidden = hp.get('hidden_layer_sizes')
+            if isinstance(hidden, (list, tuple)) and sum(hidden) > 200:
+                hints.append("hidden_layer_sizes: MEDIUM risk due to large capacity")
+            return hints
+
+        impact_hints = _cli_analyze_hp(hp_dict)
+        if impact_hints:
+            print("\nLikely contributing hyperparameters:")
+            for h in impact_hints:
+                print(f"  - {h}")
+
+        # Placeholder for metrics output (aligns with example matrices style)
+        print("\nMetrics (placeholder):")
+        print("  - Bias: N/A (provide predictions/labels to compute)")
+        print("  - Fairness: N/A (provide protected attributes to compute)")
+
+        # If an output path is provided, emit a minimal report including scenario/hyperparameters
+        if args.output:
+            meta = {
+                'model_name': 'N/A',
+                'model_version': 'N/A',
+                'scenario': args.scenario or 'N/A',
+                'hyperparameters': hp_dict,
+                'bias_report': None,
+                'fairness_metrics': None
+            }
+            criteria = {'bias_threshold': 0.1, 'fairness_threshold': 0.8}
+            try:
+                path = validator.generate_compliance_report(meta, criteria, output_path=args.output)
+                print(f"Report saved to: {path}")
+            except Exception as e:
+                print(f"Failed to save report: {e}")
         
         return 0
         

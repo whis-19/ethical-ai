@@ -21,7 +21,7 @@ The package is designed to work with Python 2.7+ and Python 3.x, making it
 compatible with a wide range of environments and existing codebases.
 
 Author: WHIS (muhammadabdullahinbox@gmail.com)
-Version: 1.0.0
+Version: 1.3.0
 License: MIT
 Repository: https://github.com/whis-19/ethical-ai
 Documentation: https://whis-19.github.io/ethical-ai/
@@ -34,7 +34,7 @@ Example:
     >>> compliance_report = validator.generate_compliance_report(metadata, criteria)
 """
 
-__version__ = "1.0.0"
+__version__ = "1.3.0"
 __author__ = "Ethical AI Team"
 __email__ = "muhammadabdullahinbox@gmail.com"
 

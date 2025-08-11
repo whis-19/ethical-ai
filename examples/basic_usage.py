@@ -33,7 +33,11 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-import xgboost as xgb
+try:
+    import xgboost as xgb  # type: ignore
+    _HAS_XGB = True
+except Exception:
+    _HAS_XGB = False
 
 import sys
 import os
@@ -119,6 +123,14 @@ def run_single_model_scenario(model_name, model, X_train, X_test, y_train, y_tes
     
     # Display results
     print(f"Model: {model_name} | Config: {config_name}")
+    try:
+        params_for_display = getattr(model, 'get_params', lambda: {})()
+        if params_for_display:
+            print("Hyperparameters:")
+            for k, v in params_for_display.items():
+                print(f"  - {k}: {v}")
+    except Exception:
+        pass
     print("Bias Analysis:")
     if not bias_report.empty:
         for _, row in bias_report.iterrows():
@@ -137,11 +149,13 @@ def run_single_model_scenario(model_name, model, X_train, X_test, y_train, y_tes
     metadata = {
         'model_name': model_name,
         'config_name': config_name,
-        'version': '1.0',
+        'version': '1.3',
+        'scenario': scenario_name,
+        'hyperparameters': getattr(model, 'get_params', lambda: {})(),
         'bias_report': bias_report,
         'fairness_metrics': fairness_metrics
     }
-    audit_criteria = {'bias_threshold': 0.1, 'fairness_threshold': 0.8}
+    audit_criteria = {'bias_threshold': 0.3, 'fairness_threshold': 0.7}
 
     # Create custom filename and output path for the report
     import os
@@ -266,28 +280,28 @@ def main():
     y_bias = y.copy()
     
     # Add extreme bias based on gender (females get much higher positive rates)
-    female_indices = sensitive_features[sensitive_features['gender'] == 'female'].index
-    y_bias[female_indices] = np.random.choice([0, 1], size=len(female_indices), p=[0.05, 0.95])  # 95% positive for females
-    
+    female_mask = (sensitive_features['gender'].to_numpy() == 'female')
+    y_bias[female_mask] = np.random.choice([0, 1], size=int(female_mask.sum()), p=[0.05, 0.95])  # 95% positive for females
+
     # Add extreme bias based on age (younger people get much higher positive rates)
-    young_indices = sensitive_features[sensitive_features['age_group'].isin(['18-25', '26-35'])].index
-    y_bias[young_indices] = np.random.choice([0, 1], size=len(young_indices), p=[0.02, 0.98])  # 98% positive for young
-    
+    young_mask = sensitive_features['age_group'].isin(['18-25', '26-35']).to_numpy()
+    y_bias[young_mask] = np.random.choice([0, 1], size=int(young_mask.sum()), p=[0.02, 0.98])  # 98% positive for young
+
     # Add extreme bias based on education (higher education gets much higher positive rates)
-    high_edu_indices = sensitive_features[sensitive_features['education'].isin(['master', 'phd'])].index
-    y_bias[high_edu_indices] = np.random.choice([0, 1], size=len(high_edu_indices), p=[0.01, 0.99])  # 99% positive for high education
-    
+    high_edu_mask = sensitive_features['education'].isin(['master', 'phd']).to_numpy()
+    y_bias[high_edu_mask] = np.random.choice([0, 1], size=int(high_edu_mask.sum()), p=[0.01, 0.99])  # 99% positive for high education
+
     # Add extreme bias for older people (much lower positive rates)
-    older_indices = sensitive_features[sensitive_features['age_group'].isin(['36-50', '50+'])].index
-    y_bias[older_indices] = np.random.choice([0, 1], size=len(older_indices), p=[0.95, 0.05])  # 95% negative for older
-    
+    older_mask = sensitive_features['age_group'].isin(['36-50', '50+']).to_numpy()
+    y_bias[older_mask] = np.random.choice([0, 1], size=int(older_mask.sum()), p=[0.95, 0.05])  # 95% negative for older
+
     # Add extreme bias for lower education (much lower positive rates)
-    low_edu_indices = sensitive_features[sensitive_features['education'].isin(['high_school', 'bachelor'])].index
-    y_bias[low_edu_indices] = np.random.choice([0, 1], size=len(low_edu_indices), p=[0.90, 0.10])  # 90% negative for low education
-    
+    low_edu_mask = sensitive_features['education'].isin(['high_school', 'bachelor']).to_numpy()
+    y_bias[low_edu_mask] = np.random.choice([0, 1], size=int(low_edu_mask.sum()), p=[0.90, 0.10])  # 90% negative for low education
+
     # Add extreme bias for males (much lower positive rates)
-    male_indices = sensitive_features[sensitive_features['gender'] == 'male'].index
-    y_bias[male_indices] = np.random.choice([0, 1], size=len(male_indices), p=[0.85, 0.15])  # 85% negative for males
+    male_mask = (sensitive_features['gender'].to_numpy() == 'male')
+    y_bias[male_mask] = np.random.choice([0, 1], size=int(male_mask.sum()), p=[0.85, 0.15])  # 85% negative for males
     
     y_series = pd.Series(y_bias)
     
@@ -418,11 +432,10 @@ def main():
         all_results.append(nn_results)
     
     # XGBoost Configurations (if available)
-    try:
+    if _HAS_XGB:
         print("\n" + "="*50)
         print("XGBOOST CONFIGURATIONS")
         print("="*50)
-        
         for config_name, params in configs['xgboost'].items():
             xgb_model = xgb.XGBClassifier(**params)
             xgb_model.fit(X_train, y_train)
@@ -431,7 +444,7 @@ def main():
                 sensitive_features, validator, f"XGB-{config_name}", config_name
             )
             all_results.append(xgb_results)
-    except ImportError:
+    else:
         print("XGBoost not available - skipping XGBoost configurations")
     
     # Step 6: Comprehensive Comparative Analysis

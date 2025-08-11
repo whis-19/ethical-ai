@@ -13,6 +13,8 @@ import numpy as np
 import tempfile
 import os
 import sys
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import train_test_split
 
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
@@ -175,6 +177,75 @@ class TestEthicalAIValidator(object):
         
         # Clean up
         os.remove(report_path)
+
+    def test_generate_compliance_report_with_custom_thresholds(self):
+        """Report generation should accept custom bias/fairness thresholds."""
+        # Create small synthetic bias/fairness inputs
+        import pandas as pd
+        bias_report = pd.DataFrame([
+            {'protected_attribute': 'gender', 'group': 'male', 'bias_score': 0.2}
+        ])
+        fairness_metrics = {
+            'fairness_scores': {
+                'gender': {'fairness_score': 0.75}
+            }
+        }
+        metadata = {
+            'model_name': 'ThresholdTestModel',
+            'bias_report': bias_report,
+            'fairness_metrics': fairness_metrics
+        }
+        # Thresholds different from defaults
+        audit_criteria = {'bias_threshold': 0.3, 'fairness_threshold': 0.7}
+        path = self.validator.generate_compliance_report(metadata, audit_criteria)
+        assert isinstance(path, str) and path.endswith('.pdf')
+        assert os.path.exists(path)
+        os.remove(path)
+
+    def test_compute_feature_disparities_fallback(self):
+        """Smoke test for feature disparities without SHAP availability."""
+        # Build a small supervised problem
+        rng = np.random.default_rng(42)
+        X = rng.normal(size=(200, 5))
+        y = rng.integers(0, 2, size=200)
+        X_df = pd.DataFrame(X)
+        # Assign simple numeric column names to avoid type issues in some environments
+        X_df.columns = pd.RangeIndex(start=0, stop=X_df.shape[1])
+        prot = {
+            'gender': rng.choice(['male', 'female'], size=200)
+        }
+        model = DecisionTreeClassifier(max_depth=4, random_state=42)
+        model.fit(X_df, y)
+        disp = self.validator.compute_feature_disparities(model, X_df, prot, max_features=5)
+        assert isinstance(disp, dict)
+        assert 'gender' in disp
+        if disp['gender']:
+            item = disp['gender'][0]
+            assert set(['feature', 'disparity', 'top_group', 'bottom_group']).issubset(item.keys())
+
+    def test_hyperparameter_ablation_smoke(self):
+        """Hyperparameter ablation returns a ranked summary for sklearn models."""
+        rng = np.random.default_rng(0)
+        X = rng.normal(size=(300, 6))
+        y = rng.integers(0, 2, size=300)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+        X_train_df = pd.DataFrame(X_train)
+        X_test_df = pd.DataFrame(X_test)
+        prot = {'gender': rng.choice(['male', 'female'], size=len(y))}
+        prot_test = {'gender': prot['gender'][len(y) - len(y_test):]}
+        model = DecisionTreeClassifier(max_depth=5, random_state=42)
+        model.fit(X_train_df, y_train)
+        ablation = self.validator.hyperparameter_ablation(
+            model,
+            X_train_df, pd.Series(y_train),
+            X_test_df, pd.Series(y_test),
+            prot_test,
+            params_to_probe=['max_depth', 'min_samples_split'],
+            max_variants_per_param=1
+        )
+        assert isinstance(ablation, dict)
+        assert 'baseline_avg_fairness' in ablation
+        assert 'summary' in ablation and isinstance(ablation['summary'], list)
     
     def test_generate_compliance_report_empty_metadata(self):
         """Test compliance report generation with empty metadata."""

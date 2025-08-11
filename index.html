@@ -495,12 +495,13 @@
             <div class="header-content">
                 <div class="title-section">
                     <h1>Ethical AI Validator</h1>
-                    <p class="subtitle">Comprehensive AI bias detection and fairness assessment package</p>
+                    <p class="subtitle">Comprehensive AI bias detection, fairness assessment, and compliance reporting
+                    </p>
                 </div>
                 <div class="badges">
                     <div class="badge badge-blue">
                         <div class="badge-icon" style="background: #0366d6;"></div>
-                        pypi v1.0.0
+                        pypi v1.3.0
                     </div>
                     <div class="badge badge-green">
                         <div class="badge-icon" style="background: #28a745;"></div>
@@ -559,8 +560,10 @@
                 <h2 id="quick-start">Quick Start</h2>
                 <div class="code-block">
                     <pre>from ethical_ai_validator import EthicalAIValidator
-# Initialize the validator
-validator = EthicalAIValidator()
+
+# Initialize the validator (you can set default thresholds here)
+validator = EthicalAIValidator(config={'bias_threshold': 0.1, 'fairness_threshold': 0.8})
+
 # Sample data
 predictions = [1, 0, 1, 0, 1, 0, 1, 0]
 true_labels = [1, 0, 1, 0, 1, 0, 1, 0]
@@ -568,14 +571,25 @@ protected_attributes = {
     'gender': ['male', 'female', 'male', 'female', 'male', 'female', 'male', 'female'],
     'age_group': ['young', 'old', 'young', 'old', 'young', 'old', 'young', 'old']
 }
-# Perform bias audit
-bias_report = validator.audit_bias(
-    predictions=predictions,
-    true_labels=true_labels,
-    protected_attributes=protected_attributes
-)
-print("Bias Report:")
-print(bias_report)</pre>
+
+# Perform bias and fairness analysis
+bias_report = validator.audit_bias(predictions, true_labels, protected_attributes)
+fairness_metrics = validator.calculate_fairness_metrics(predictions, protected_attributes)
+
+# Generate a compliance PDF including scenario + hyperparameters
+metadata = {
+    'model_name': 'MyModel',
+    'scenario': 'Experiment-1',
+    'hyperparameters': {'max_depth': 10},
+    'bias_report': bias_report,
+    'fairness_metrics': fairness_metrics
+}
+audit_criteria = {'bias_threshold': 0.12, 'fairness_threshold': 0.85}
+validator.generate_compliance_report(metadata, audit_criteria, output_path='example_reports/my_report.pdf')</pre>
+                </div>
+                <div class="info-box">
+                    <strong>CLI (v1.3.0):</strong>
+                    <code>whis-ethical-ai --scenario "Exp-1" --hyperparameters "{\"max_depth\": 10}" --output "report.pdf"</code>
                 </div>
                 <h2 id="core-functionality">Core Functionality</h2>
                 <h3>Bias Detection</h3>
@@ -649,24 +663,40 @@ print(bias_report)</pre>
                 </ul>
                 <h2 id="advanced-usage">Advanced Usage</h2>
                 <div class="code-block">
-                    <pre># Comprehensive audit with all features
-validator = EthicalAIValidator()
+                    <pre># Comprehensive audit with all features (v1.3.0)
+validator = EthicalAIValidator(config={'bias_threshold': 0.1, 'fairness_threshold': 0.8})
+
 # Perform complete audit
 bias_report = validator.audit_bias(predictions, true_labels, protected_attributes)
 fairness_metrics = validator.calculate_fairness_metrics(predictions, protected_attributes)
 mitigations = validator.suggest_mitigations(bias_report)
-compliance_report = validator.generate_compliance_report(
-    bias_report=bias_report,
-    fairness_metrics=fairness_metrics,
-    model_info={'name': 'MyModel', 'version': '1.0.0'}
-)
-# Monitor in real-time
-monitor = validator.monitor_realtime(
-    model_predictions=predictions,
-    protected_attributes=protected_attributes,
-    alert_threshold=0.1
-)</pre>
+
+# Include scenario/hyperparameters and thresholds in the report
+metadata = {
+    'model_name': 'MyModel',
+    'scenario': 'A/B test - balanced',
+    'hyperparameters': {'max_depth': 8, 'min_samples_split': 5},
+    'bias_report': bias_report,
+    'fairness_metrics': fairness_metrics
+}
+audit_criteria = {'bias_threshold': 0.1, 'fairness_threshold': 0.8}
+report_path = validator.generate_compliance_report(metadata, audit_criteria, output_path='example_reports/ab_test.pdf')
+
+# Real-time monitoring
+alerts = validator.monitor_realtime([[1,0,1,0,1,0]])</pre>
                 </div>
+                <h2 id="whats-new">What's New in v1.3.0</h2>
+                <ul>
+                    <li><strong>Scenario & Hyperparameters in reports</strong> with a structured table.</li>
+                    <li><strong>Hyperparameter Impact Analysis</strong> with risk and rationale.</li>
+                    <li><strong>Feature Contribution Disparities</strong> section (uses SHAP when available).</li>
+                    <li><strong>Configurable thresholds</strong> via <code>audit_criteria</code> or validator
+                        <code>config</code>.
+                    </li>
+                    <li><strong>CLI</strong> flags: <code>--scenario</code>, <code>--hyperparameters</code>,
+                        <code>--output</code>.
+                    </li>
+                </ul>
                 <h2 id="api-reference">API Reference</h2>
                 <table class="table">
                     <thead>
@@ -716,7 +746,7 @@ monitor = validator.monitor_realtime(
                     <pre>python -m pytest tests/ -v</pre>
                 </div>
                 <div class="success-box">
-                    <strong>✅ All 43 tests passing!</strong> The package has been thoroughly tested for bias detection,
+                    <strong>✅ All tests passing!</strong> The package has been thoroughly tested for bias detection,
                     fairness metrics, compliance reporting, and real-time monitoring functionality.
                 </div>
                 <div class="warning-box">
@@ -778,7 +808,7 @@ monitor = validator.monitor_realtime(
                     <p><strong>Email:</strong> <a
                             href="mailto:muhammadabdullahinbox@gmail.com">muhammadabdullahinbox@gmail.com</a></p>
                     <p><strong>Author:</strong> <a href="https://github.com/whis-19" target="_blank">WHIS</a></p>
-                    <p><strong>Version:</strong> 1.0.0</p>
+                    <p><strong>Version:</strong> 1.3.0</p>
                     <p><strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/abdullahlinked"
                             target="_blank">Muhammad Abdullah</a></p>
                     <p><strong>X (Twitter):</strong> <a href="https://x.com/23_whis" target="_blank">@23_whis</a></p>
